@@ -1,0 +1,5 @@
+(library
+ (name compose_news)
+ (libraries xml-light js_of_ocaml)
+ (preprocess
+  (pps ppx_deriving.show js_of_ocaml-ppx)))
