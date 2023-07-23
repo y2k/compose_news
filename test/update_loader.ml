@@ -1,4 +1,4 @@
-(* module StringMap = Map.Make (String)
+module StringMap = Map.Make (String)
 
 type content = {title: string; link: string} [@@deriving show]
 
@@ -9,13 +9,13 @@ let get_links xml =
   |> List.concat_map Xml.children
   |> List.map (fun x ->
          { title= Xml.children x |> List.hd |> Xml.pcdata
-         ; link= Xml.attrib x "href" } ) *)
-
+         ; link= Xml.attrib x "href" } )
 (* |> List.filter (fun x ->
-       Str.string_match (Str.regexp {|.+\(material\|foundation\).+|}) x.link 0 ) *)
+         Str.string_match (Str.regexp {|.+\(material\|foundation\).+|}) x.link 0 ) *)
 
-let main () = ()
-  (* Xml.parse_file "rss.xml" |> Xml.children
+let main () =
+  Xml.parse_file "../../../test/rss.xml"
+  |> Xml.children
   |> List.filter (fun x -> Xml.tag x = "entry")
   |> List.filteri (fun i _ -> i < 3)
   |> List.map (fun x ->
@@ -31,4 +31,4 @@ let main () = ()
                     a )
               {date= ""; links= []} )
   |> List.iter (fun x -> print_endline (show_item x)) ;
-  flush_all () *)
+  flush_all ()
