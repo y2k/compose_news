@@ -1,0 +1,32 @@
+name = "compose_news"
+# type = "javascript"
+# route = ''
+# zone_id = ''
+usage_model = 'bundled'
+compatibility_flags = []
+workers_dev = true
+compatibility_date = "2022-12-27"
+node_compat = true
+
+main = "_build/default/bin/main.bc.js"
+
+[dev]
+# ip = "192.168.1.1"
+port = 8080
+# local_protocol = "http"
+
+[build]
+command = "make build"
+watch_dir = "bin"
+
+[[rules]]
+type = "ESModule"
+globs = [ "**/*.js" ]
+
+#[build]
+#watch_dir = "bin"
+#command = "dune build --profile=release"
+#upload.dir = "_build/default/bin"
+#upload.main = "main.bc.js"
+#upload.format = "modules"
+#upload.rules = [{ type = "ESModule", globs = ["**/*.js"] }]

@@ -1,4 +1,8 @@
 (executable
- (public_name compose_news)
+ (flags
+  (:standard -warn-error -A))
  (name main)
- (libraries lib))
+ (modes js)
+ (libraries lib js_of_ocaml)
+ (preprocess
+  (pps js_of_ocaml-ppx)))
