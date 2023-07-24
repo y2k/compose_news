@@ -78,6 +78,4 @@ let parse prefix html =
          print_endline (show_dom x) ;
          x ) *)
   |> Option.map (function Element (_, _, xs) -> parse xs | _ -> failwith "???")
-  |> Option.map (List.map show_item)
   |> Option.fold ~none:[] ~some:Fun.id
-  |> List.fold_left ( ^ ) "\n"

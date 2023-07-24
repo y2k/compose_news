@@ -1,4 +1,4 @@
 (executable
  (public_name compose_news)
  (name main)
- (libraries compose_news))
+ (libraries lib))
