@@ -7,9 +7,6 @@ node_compat = true
 
 main = "_build/default/bin/main.bc.js"
 
-[dev]
-port = 8080
-
 [build]
 command = "make build"
 watch_dir = "bin"
