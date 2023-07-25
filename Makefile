@@ -4,4 +4,4 @@ release:
 	dune clean && dune test && dune build bin --profile=release
 
 build:
-	dune build bin --profile=release
+	dune build bin

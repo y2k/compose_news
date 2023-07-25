@@ -24,6 +24,7 @@ let get_new_substring prefix html =
   Str.search_forward regex html prev_begin |> ignore ;
   String.sub html (prev_begin - 1) (Str.match_beginning () - prev_begin)
   |> ( ^ ) "<div>"
+  |> fun x -> x ^ "</div>"
 
 type dom =
   | Text of string
@@ -67,15 +68,20 @@ let rec parse (xs : dom list) =
 
 let parse prefix html =
   let html = html |> get_new_substring prefix in
-  (* print_endline html ; *)
-  html |> Markup.string |> Markup.parse_html |> Markup.signals
+  print_endline html ;
+  html
+  |> Markup.string
+  |> Markup.parse_html
+  |> Markup.signals
+  |> fun x -> print_endline "LOG :: (3)"; x
   |> Markup.tree
-       ~text:(fun ss -> Text (String.concat "" ss))
+       ~text:(fun ss ->
+          print_endline @@ "LOG : Text | " ^ (String.concat "" ss);
+        Text (String.concat "" ss))
        ~element:(fun (_, name) xs children ->
+        print_endline @@ "LOG : Elements | " ^ name;
          let attrs = xs |> List.map (fun ((_, name), value) -> (name, value)) in
          Element (name, attrs, children) )
-  (* |> Option.map (fun x ->
-         print_endline (show_dom x) ;
-         x ) *)
+  |> fun x -> print_endline "LOG :: (4)"; x
   |> Option.map (function Element (_, _, xs) -> parse xs | _ -> failwith "???")
   |> Option.fold ~none:[] ~some:Fun.id

@@ -38,6 +38,10 @@ let log_error e = U.global##.console##error e
 
 type http_cmd_props = {url: string; props: req_props} [@@deriving show]
 
+let fetch__ (url : string) =
+  let promise = execute_request url (ReqObj []) in
+  (promise##catch (fun e -> log_error e))##then_ (fun result -> result##text)
+
 let fetch_ (url : string) (callback : _ -> unit) =
   let promise = execute_request url (ReqObj []) in
   let result_promise =
