@@ -18,6 +18,17 @@ let execute_request (url : string) props =
   in
   U.global##fetch (U.inject url) (mk_req props)
 
+type http_cmd_props = {url: string; props: req_props} [@@deriving show]
+
+let execute_request_ (p : http_cmd_props) =
+  let rec mk_req = function
+    | ReqObj props ->
+        U.obj (Array.of_list (List.map (fun (k, p) -> (k, mk_req p)) props))
+    | ReqValue v ->
+        U.inject v
+  in
+  U.global##fetch (U.inject p.url) (mk_req p.props)
+
 let entries_to_string_map entries =
   U.global ##. Array##from entries
   |> Js.to_array
@@ -36,8 +47,6 @@ let get_entries obj = U.global ##. Object##entries obj
 
 let log_error e = U.global##.console##error e
 
-type http_cmd_props = {url: string; props: req_props} [@@deriving show]
-
 let fetch__ (url : string) =
   let promise = execute_request url (ReqObj []) in
   (promise##catch (fun e -> log_error e))##then_ (fun result -> result##text)
@@ -48,6 +57,11 @@ let fetch_ (url : string) (callback : _ -> unit) =
     (promise##catch (fun e -> log_error e))##then_ (fun result -> result##text)
   in
   callback result_promise
+
+let make_env event =
+  { env= entries_to_string_map (get_entries event##.env)
+  ; headers= StringMap.empty
+  ; body= "" }
 
 let fetch (* (handle : http_msg_props -> http_cmd_props option) *) req env =
   print_endline "LOG :: CALLED" ;

@@ -1,5 +1,5 @@
 (test
  (name compose_news)
- (libraries lib xml-light str markup)
+ (libraries lib xml-light str markup re)
  (preprocess
   (pps ppx_deriving.show)))
