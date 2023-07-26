@@ -1,6 +1,14 @@
 open Js_of_ocaml
 module U = Js_of_ocaml.Js.Unsafe
-module StringMap = Map.Make (String)
+
+module StringMap = struct
+  include Map.Make (String)
+
+  let pp _ ppf m =
+    Format.fprintf ppf "{" ;
+    iter (fun k v -> Format.fprintf ppf "\"%s\": \"%s\"; " k v) m ;
+    Format.fprintf ppf "}"
+end
 
 type req_props = ReqValue of string | ReqObj of (string * req_props) list
 [@@deriving show]
@@ -25,7 +33,7 @@ let execute_request_ (p : http_cmd_props) =
     | ReqObj props ->
         U.obj (Array.of_list (List.map (fun (k, p) -> (k, mk_req p)) props))
     | ReqValue v ->
-        U.inject v
+        Js.string v |> U.inject
   in
   U.global##fetch (U.inject p.url) (mk_req p.props)
 
@@ -58,10 +66,19 @@ let fetch_ (url : string) (callback : _ -> unit) =
   in
   callback result_promise
 
-let make_env event =
-  { env= entries_to_string_map (get_entries event##.env)
+let make_env _event =
+  { env=
+      StringMap.of_seq
+      @@ List.to_seq
+           [ ("TG_TOKEN", U.global ##. TG_TOKEN_)
+           ; ("CHAT_ID", U.global ##. CHAT_ID_) ]
   ; headers= StringMap.empty
   ; body= "" }
+
+(* let make_env event =
+   { env= entries_to_string_map (get_entries event##.env)
+   ; headers= StringMap.empty
+   ; body= "" } *)
 
 let fetch (* (handle : http_msg_props -> http_cmd_props option) *) req env =
   print_endline "LOG :: CALLED" ;

@@ -5,4 +5,4 @@
  (modes js)
  (libraries lib js_of_ocaml yojson)
  (preprocess
-  (pps js_of_ocaml-ppx)))
+  (pps ppx_deriving.show js_of_ocaml-ppx)))

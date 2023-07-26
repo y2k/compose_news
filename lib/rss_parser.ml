@@ -18,7 +18,7 @@ let get_links xml =
 let main xml_string =
   xml_string |> Xml.parse_string |> Xml.children
   |> List.filter (fun x -> Xml.tag x = "entry")
-  |> List.filteri (fun i _ -> i < 3)
+  |> List.filteri (fun i _ -> i < 1)
   |> List.map (fun x ->
          x
          |> Xml.fold
