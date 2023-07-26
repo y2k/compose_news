@@ -32,6 +32,10 @@ let translate = function
       "Изменения API"
   | "Experimental K2 support" ->
       "Экспериментальная поддержка K2"
+  | "Dependency Update" ->
+      "Обновление зависимостей"
+  | "New Features" ->
+      "Новые функции"
   | text ->
       text
 
@@ -48,10 +52,13 @@ let on_html_downloaded (rss : Rss_parser.content) meta html =
   in
   make_telegram_request meta msg
 
+let compose_re = Re.str "ompose" |> Re.compile
+
 let on_xml_downloaded xml =
   let links = Rss_parser.main xml in
   links
   |> List.concat_map (fun (x : Rss_parser.item) -> x.links)
+  |> List.filter (fun (x : Rss_parser.content) -> Re.execp compose_re x.title)
   |> Array.of_list
 
 let handle_scheduled event =

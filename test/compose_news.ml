@@ -58,3 +58,11 @@ let () =
   |> Html_parser.parse "1.2.0-beta01"
   |> List.map Html_parser.show_item
   |> List.fold_left ( ^ ) "\n" |> ignore
+
+let () =
+  let compose_re = Re.str "ompose" |> Re.compile in
+  let assert_ x = if not @@ Re.execp compose_re x then failwith x in
+  assert_ "compose" ;
+  assert_ "Compose" ;
+  assert_ "Foo Compose Bar" ;
+  assert_ "Foo compose Bar"
