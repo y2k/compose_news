@@ -1,21 +1,6 @@
 open Js_of_ocaml
 module U = Js_of_ocaml.Js.Unsafe
-
-module StringMap = struct
-  include Map.Make (String)
-
-  let pp _ ppf m =
-    Format.fprintf ppf "{" ;
-    iter (fun k v -> Format.fprintf ppf "\"%s\": \"%s\"; " k v) m ;
-    Format.fprintf ppf "}"
-end
-
-type req_props = ReqValue of string | ReqObj of (string * req_props) list
-[@@deriving show]
-
-type http_msg_props =
-  {env: string StringMap.t; headers: string StringMap.t; body: string}
-[@@deriving show]
+open Lib.Core
 
 let execute_request (url : string) props =
   let rec mk_req = function
@@ -25,8 +10,6 @@ let execute_request (url : string) props =
         U.inject v
   in
   U.global##fetch (U.inject url) (mk_req props)
-
-type http_cmd_props = {url: string; props: req_props} [@@deriving show]
 
 let execute_request_ (p : http_cmd_props) =
   let rec mk_req = function

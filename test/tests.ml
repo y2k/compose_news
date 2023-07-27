@@ -66,3 +66,24 @@ let () =
   assert_ "Compose" ;
   assert_ "Foo Compose Bar" ;
   assert_ "Foo compose Bar"
+
+let () =
+  let remove_issue_re = Re.Perl.compile_pat {| \(\w+\)|} in
+  let input = "aaa (I4aab5) bbb" in
+  let actual = Re.replace_string remove_issue_re input ~by:"" in
+  if actual <> "aaa bbb" then failwith actual
+
+let () =
+  let remove_issue_re = Re.Perl.compile_pat {| \([\w/, ]+\)|} in
+  let input =
+    {|- Change the use of ClosedFloatingPointRange for the lighter weight. (I4aab5)
+- Added new Start alignment for FabPosition (Ib7aea, b/170592777)
+- ModalBottomSheet respects local layout direction. (Ib4f44, b/285628622)|}
+  in
+  let expected =
+    {|- Change the use of ClosedFloatingPointRange for the lighter weight.
+- Added new Start alignment for FabPosition
+- ModalBottomSheet respects local layout direction.|}
+  in
+  let actual = Re.replace_string remove_issue_re input ~by:"" in
+  if actual <> expected then failwith ("\n" ^ actual ^ "\n")
