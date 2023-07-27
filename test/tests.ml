@@ -13,6 +13,58 @@ let read_sample_file filename =
   close_in ch ; s
 
 let () =
+  let actual =
+    {env= Core.StringMap.empty; body= read_sample_file "rss2.xml"}
+    |> Core.on_xml_downloaded |> List.map Core.show_cmd
+    |> List.fold_left ( ^ ) ""
+  in
+  let expected =
+    "eyBDb3JlLnVybCA9CiAgImh0dHBzOi8vZGV2ZWxvcGVyLmFuZHJvaWQuY29tL2pldHBhY2svYW5kcm9pZHgvcmVsZWFzZXMvY29tcG9zZS1hbmltYXRpb24jMS41LjAtcmMwMSI7CiAgcHJvcHMgPSAoQ29yZS5SZXFPYmogW10pOyBjYWxsYmFjayA9IDxmdW4+IH17IENvcmUudXJsID0KICAiaHR0cHM6Ly9kZXZlbG9wZXIuYW5kcm9pZC5jb20vamV0cGFjay9hbmRyb2lkeC9yZWxlYXNlcy9jb21wb3NlLWFuaW1hdGlvbiMxLjYuMC1hbHBoYTAyIjsKICBwcm9wcyA9IChDb3JlLlJlcU9iaiBbXSk7IGNhbGxiYWNrID0gPGZ1bj4gfQ=="
+    |> Base64.decode |> Result.get_ok
+  in
+  if actual <> expected then (
+    prerr_endline (Base64.encode_string actual) ;
+    failwith "" )
+
+let () =
+  let rss = read_sample_file "sample3.html" in
+  let cmds =
+    Core.on_http_downloaded
+      {title= "title"; link= "link"; version= "1.5.0-rc01"}
+      { env=
+          Core.StringMap.of_seq
+            (List.to_seq [("TG_TOKEN", "TG_TOKEN"); ("CHAT_ID", "CHAT_ID")])
+      ; body= rss }
+  in
+  let actual = cmds |> List.map Core.show_cmd |> List.fold_left ( ^ ) "" in
+  let expected =
+    "eyBDb3JlLnVybCA9ICJodHRwczovL2FwaS50ZWxlZ3JhbS5vcmcvYm90VEdfVE9LRU4vc2VuZE1lc3NhZ2UiOwogIHByb3BzID0KICAoQ29yZS5SZXFPYmoKICAgICBbKCJib2R5IiwKICAgICAgIChDb3JlLlJlcVZhbHVlCiAgICAgICAgICAie1wiY2hhdF9pZFwiOlwiQ0hBVF9JRFwiLFwidGV4dFwiOlwidGl0bGVcXG5cXG5bIFwyMDhcMTUyXDIwOVwxMjlcMjA4XDE5MVwyMDlcMTI4XDIwOFwxNzZcMjA4XDE3OFwyMDhcMTg3XDIwOFwxODFcMjA4XDE4OVwyMDhcMTg0XDIwOFwxODEgXDIwOFwxOTBcMjA5XDEzNlwyMDhcMTg0XDIwOFwxNzdcMjA4XDE5MFwyMDhcMTg2IF1cXG4tIEZpeGVkIGFuIGlzc3VlIHdoZXJlIGNhbGxpbmcgLnZhbHVlIG9uIGEgcHJpbWl0aXZlIHN0YXRlIHR5cGUgd291bGQgcmVwb3J0IGEgbGludCB3YXJuaW5nIHdpdGggYW4gaW52YWxpZCBmaXguIFRoZSBpbnNwZWN0aW9uIHdpbGwgbm93IHJlY29tbWVuZCBtaWdyYXRpbmcgdG8gdGhlIGNvcnJlY3QgcHJvcGVydHkuXFxuLSBBbiBvcHRpb25hbCBpbnNwZWN0aW9uIHRvIHJlY29tbWVuZCBtaWdyYXRpbmcgbXV0YWJsZVN0YXRlT2YoKSBjYWxscyB0byB0aGVpciBjb3JyZXNwb25kaW5nIHNwZWNpYWxpemVkIHR5cGVzIGZvciBwcmltaXRpdmVzIGlzIGF2YWlsYWJsZS4gSXRzIGxpbnQgSUQgaXMgQXV0b2JveGluZ1N0YXRlQ3JlYXRpb24uIFByZXZpb3VzbHksIHRoaXMgaW5zcGVjdGlvbiB3YXMgZW5hYmxlZCBieSBkZWZhdWx0IGZvciBhbGwgcHJvamVjdHMuIFRvIHNlZSB0aGlzIHdhcm5pbmcgaW4gQW5kcm9pZCBTdHVkaW8ncyBlZGl0b3IgYW5kIHlvdXIgcHJvamVjdCdzIGxpbnQgb3V0cHV0cywgY2hhbmdlIGl0cyBzZXZlcml0eSBmcm9tIGluZm9ybWF0aW9uYWwgdG8gd2FybmluZyBieSBkZWNsYXJpbmcgd2FybmluZyBcXFwiQXV0b2JveGluZ1N0YXRlQ3JlYXRpb25cXFwiIGluc2lkZSB5b3VyIG1vZHVsZSdzIGJ1aWxkLmdyYWRsZSBvciBidWlsZC5ncmFkbGUua3RzIGNvbmZpZ3VyYXRpb24gYXMgc2hvd246ICAgICBhbmRyb2lkIHsgICAgICAgICBsaW50IHsgICAgICAgICAgICAgd2FybmluZyBcXFwiQXV0b2JveGluZ1N0YXRlQ3JlYXRpb25cXFwiICAgICAgICAgfSAgICAgICAgIC4uLiAgICAgfSBcIn0iKSk7CiAgICAgICAoIm1ldGhvZCIsIChDb3JlLlJlcVZhbHVlICJwb3N0IikpOwogICAgICAgKCJoZWFkZXJzIiwKICAgICAgICAoQ29yZS5SZXFPYmogWygiY29udGVudC10eXBlIiwgKENvcmUuUmVxVmFsdWUgImFwcGxpY2F0aW9uL2pzb24iKSldKSkKICAgICAgIF0pOwogIGNhbGxiYWNrID0gPGZ1bj4gfQ=="
+    |> Base64.decode |> Result.get_ok
+  in
+  if actual <> expected then (
+    prerr_endline (Base64.encode_string actual) ;
+    failwith "" )
+
+let () =
+  let rss = read_sample_file "sample2.html" in
+  let cmds =
+    Core.on_http_downloaded
+      {title= "title"; link= "link"; version= "1.1.0"}
+      { env=
+          Core.StringMap.of_seq
+            (List.to_seq [("TG_TOKEN", "TG_TOKEN"); ("CHAT_ID", "CHAT_ID")])
+      ; body= rss }
+  in
+  let actual = cmds |> List.map Core.show_cmd |> List.fold_left ( ^ ) "" in
+  let expected =
+    "eyBDb3JlLnVybCA9ICJodHRwczovL2FwaS50ZWxlZ3JhbS5vcmcvYm90VEdfVE9LRU4vc2VuZE1lc3NhZ2UiOwogIHByb3BzID0KICAoQ29yZS5SZXFPYmoKICAgICBbKCJib2R5IiwKICAgICAgIChDb3JlLlJlcVZhbHVlCiAgICAgICAgICAie1wiY2hhdF9pZFwiOlwiQ0hBVF9JRFwiLFwidGV4dFwiOlwidGl0bGVcXG5cXG5bIEltcG9ydGFudCBjaGFuZ2VzIHNpbmNlIDEuMC4wIF1cXG4tIFN1cHBvcnQgZm9yIEpldHBhY2sgTWFjcm9iZW5jaG1hcmtzLCB3aGljaCBhbGxvd3MgeW91IHRvIG1lYXN1cmUgd2hvbGUtYXBwIGludGVyYWN0aW9ucyBsaWtlIHN0YXJ0dXAgYW5kIHNjcm9sbGluZywgcHJvdmlkZXMgdGhlIGFiaWxpdHkgdG8gY2FwdHVyZSB0cmFjZXMgICYgbWVhc3VyZSB0cmFjZSBzZWN0aW9ucy5cXG4tIFN1cHBvcnQgZm9yIEJhc2VsaW5lIFByb2ZpbGVzICAgQ29tcGlsYXRpb25Nb2RlLlBhcnRpYWwgdG8gbWVhc3VyZSB0aGUgZWZmZWN0aXZlbmVzcyBvZiBCYXNlbGluZSBQcm9maWxlcy4gQEJhc2VsaW5lUHJvZmlsZVJ1bGUgdG8gYXV0b21hdGljYWxseSBnZW5lcmF0ZSBCYXNlbGluZSBwcm9maWxlcyBmb3IgYSBnaXZlbiBjcml0aWNhbCB1c2VyIGpvdXJuZXkuIFxcbi0gU3VwcG9ydCBmb3IgQWxsb2NhdGlvbiBtZXRyaWNzICYgcHJvZmlsaW5nIGR1cmluZyBNaWNyb2JlbmNobWFyayBydW5zLlwifSIpKTsKICAgICAgICgibWV0aG9kIiwgKENvcmUuUmVxVmFsdWUgInBvc3QiKSk7CiAgICAgICAoImhlYWRlcnMiLAogICAgICAgIChDb3JlLlJlcU9iaiBbKCJjb250ZW50LXR5cGUiLCAoQ29yZS5SZXFWYWx1ZSAiYXBwbGljYXRpb24vanNvbiIpKV0pKQogICAgICAgXSk7CiAgY2FsbGJhY2sgPSA8ZnVuPiB9"
+    |> Base64.decode |> Result.get_ok
+  in
+  if actual <> expected then (
+    prerr_endline (Base64.encode_string actual) ;
+    failwith "" )
+
+let () =
   let get_new_substring prefix html =
     let r1 = Re.str ({|<h3 id="|} ^ prefix ^ "\"") |> Re.compile in
     let start_pos = Re.Group.start (Re.exec r1 html) 0 in

@@ -1,14 +1,30 @@
 open Js_of_ocaml
+module Unsafe = Js.Unsafe
 open Lib.Core
-open Cloudflare
+
+let execute_request (cmd : cmd) =
+  let rec mk_req = function
+    | ReqObj props ->
+        Unsafe.obj
+          (Array.of_list (List.map (fun (k, p) -> (k, mk_req p)) props))
+    | ReqValue v ->
+        Js.string v |> Unsafe.inject
+  in
+  Unsafe.global##fetch (Unsafe.inject cmd.url) (mk_req cmd.props)
+
+let make_env () : string StringMap.t =
+  List.to_seq
+    [ ("TG_TOKEN", Unsafe.global ##. TG_TOKEN_)
+    ; ("CHAT_ID", Unsafe.global ##. CHAT_ID_) ]
+  |> StringMap.of_seq
 
 let next f p = p##then_ f
 
 let handle_scheduled event =
-  let env = Cloudflare.make_env () in
+  let env = make_env () in
   let rec handle_scheduled_ props =
-    let download (prop : http_cmd_props) =
-      prop |> Cloudflare.execute_request_
+    let download (prop : cmd) =
+      prop |> execute_request
       |> next (fun response -> response##text)
       |> next (fun text ->
              prop.callback {body= text; env} |> handle_scheduled_ )

@@ -3,7 +3,7 @@ module StringMap = struct
 
   let pp _ ppf m =
     Format.fprintf ppf "{" ;
-    iter (fun k v -> Format.fprintf ppf "\"%s\": \"%s\"; " k v) m ;
+    iter (Format.fprintf ppf "\"%s\": \"%s\"; ") m ;
     Format.fprintf ppf "}"
 end
 
@@ -22,30 +22,44 @@ module ClearText = struct
     | text ->
         text
 
+  let clear_html_1_re = Re.str "&#34;" |> Re.compile
+
+  let clear_html_2_re = Re.str "&#39;" |> Re.compile
+
+  let clear_html_3_re = Re.str "&amp;" |> Re.compile
+
+  let clear_html_4_re = Re.str "&quot;" |> Re.compile
+
   let remove_issue_re = Re.Perl.compile_pat {| \([\w/, ]+\)|}
 
-  let remove_issue input = Re.replace_string remove_issue_re input ~by:""
+  let clear_text input =
+    let decode_html text =
+      text
+      |> Re.replace_string clear_html_1_re ~by:"\""
+      |> Re.replace_string clear_html_2_re ~by:"'"
+      |> Re.replace_string clear_html_3_re ~by:"&"
+      |> Re.replace_string clear_html_4_re ~by:"\""
+    in
+    let remove_issue input = Re.replace_string remove_issue_re input ~by:"" in
+    input |> remove_issue |> decode_html
 end
 
-type http_msg_props = {env: string StringMap.t; body: string} [@@deriving show]
+type msg = {env: string StringMap.t; body: string} [@@deriving show]
 
 type req_props = ReqValue of string | ReqObj of (string * req_props) list
 [@@deriving show]
 
-type http_cmd_props =
-  { url: string
-  ; props: req_props
-  ; callback: http_msg_props -> http_cmd_props list }
+type cmd = {url: string; props: req_props; callback: msg -> cmd list}
 [@@deriving show]
 
-let make_telegram_request (msg : http_msg_props) (new_message : string) =
+let make_telegram_request env (new_message : string) =
   let url =
     Printf.sprintf "https://api.telegram.org/bot%s/sendMessage"
-      (StringMap.find "TG_TOKEN" msg.env)
+      (StringMap.find "TG_TOKEN" env)
   in
   let body =
     `Assoc
-      [ ("chat_id", `String (StringMap.find "CHAT_ID" msg.env))
+      [ ("chat_id", `String (StringMap.find "CHAT_ID" env))
       ; ("text", `String new_message) ]
     |> Yojson.Safe.to_string
   in
@@ -57,16 +71,16 @@ let make_telegram_request (msg : http_msg_props) (new_message : string) =
         ; ("headers", ReqObj [("content-type", ReqValue "application/json")]) ]
   ; callback= (fun _ -> []) }
 
-let on_http_downloaded (rss : Rss_parser.content) (msg : http_msg_props) =
+let on_http_downloaded (rss : Rss_parser.content) (msg : msg) =
   msg.body
   |> Html_parser.parse rss.version
   |> List.map (fun (x : Html_parser.item) ->
          x.content
          |> List.fold_left
-              (fun state x -> state ^ "\n- " ^ ClearText.remove_issue x)
+              (fun state x -> state ^ "\n- " ^ ClearText.clear_text x)
               ("[ " ^ ClearText.translate x.title ^ " ]") )
   |> List.fold_left (Printf.sprintf "%s\n%s") (rss.title ^ "\n")
-  |> make_telegram_request msg
+  |> make_telegram_request msg.env
   |> fun x -> [x]
 
 let compose_re = Re.str "ompose" |> Re.compile

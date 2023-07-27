@@ -1,5 +1,5 @@
 (test
  (name tests)
- (libraries lib xml-light str markup re)
+ (libraries lib xml-light str markup re base64)
  (preprocess
   (pps ppx_deriving.show)))
