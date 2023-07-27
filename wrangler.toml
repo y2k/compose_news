@@ -9,7 +9,7 @@ main = "_build/default/bin/main.bc.js"
 
 [build]
 command = "make build_wrangler"
-watch_dir = "bin"
+watch_dir = ["bin", "lib"]
 
 [[rules]]
 type = "ESModule"

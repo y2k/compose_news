@@ -1,5 +1,5 @@
 open Js_of_ocaml
-module U = Js_of_ocaml.Js.Unsafe
+module U = Js.Unsafe
 open Lib.Core
 
 let execute_request (url : string) props =
@@ -49,28 +49,17 @@ let fetch_ (url : string) (callback : _ -> unit) =
   in
   callback result_promise
 
-let make_env _event =
-  { env=
-      StringMap.of_seq
-      @@ List.to_seq
-           [ ("TG_TOKEN", U.global ##. TG_TOKEN_)
-           ; ("CHAT_ID", U.global ##. CHAT_ID_) ]
-  ; headers= StringMap.empty
-  ; body= "" }
-
-(* let make_env event =
-   { env= entries_to_string_map (get_entries event##.env)
-   ; headers= StringMap.empty
-   ; body= "" } *)
+let make_env () : string StringMap.t =
+  List.to_seq
+    [("TG_TOKEN", U.global ##. TG_TOKEN_); ("CHAT_ID", U.global ##. CHAT_ID_)]
+  |> StringMap.of_seq
 
 let fetch (* (handle : http_msg_props -> http_cmd_props option) *) req env =
   print_endline "LOG :: CALLED" ;
   req##text##then_ (fun body ->
       match
         (fun _ -> None)
-          { env= entries_to_string_map (get_entries env)
-          ; headers= entries_to_string_map req##.headers
-          ; body= Js.to_string body }
+          {env= entries_to_string_map (get_entries env); body= Js.to_string body}
       with
       | Some cmd ->
           let promise = execute_request cmd.url cmd.props in

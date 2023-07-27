@@ -1,70 +1,24 @@
 open Js_of_ocaml
-open Lib
 open Lib.Core
+open Cloudflare
 
 let next f p = p##then_ f
 
-open Cloudflare
-
-module ClearText = struct
-  let translate = function
-    | "Bug Fixes" ->
-        "Исправление ошибок"
-    | "API Changes" ->
-        "Изменения API"
-    | "Experimental K2 support" ->
-        "Экспериментальная поддержка K2"
-    | "Dependency Update" ->
-        "Обновление зависимостей"
-    | "New Features" ->
-        "Новые функции"
-    | text ->
-        text
-
-  let remove_issue_re = Re.Perl.compile_pat {| \([\w/, ]+\)|}
-
-  let remove_issue input = Re.replace_string remove_issue_re input ~by:""
-end
-
-let on_html_downloaded (rss : Rss_parser.content) meta html =
-  let items = html |> Html_parser.parse rss.version in
-  let msg =
-    items
-    |> List.map (fun (x : Html_parser.item) ->
-           x.content
-           |> List.fold_left
-                (fun state x -> state ^ "\n- " ^ ClearText.remove_issue x)
-                ("[ " ^ ClearText.translate x.title ^ " ]") )
-    |> List.fold_left (Printf.sprintf "%s\n%s") (rss.title ^ "\n")
+let handle_scheduled event =
+  let env = Cloudflare.make_env () in
+  let rec handle_scheduled_ props =
+    let download (prop : http_cmd_props) =
+      prop |> Cloudflare.execute_request_
+      |> next (fun response -> response##text)
+      |> next (fun text ->
+             prop.callback {body= text; env} |> handle_scheduled_ )
+    in
+    props |> List.map download |> Array.of_list
+    |> fun pall -> Js.Unsafe.global ##. Promise##all pall
   in
-  make_telegram_request meta msg
-
-let compose_re = Re.str "ompose" |> Re.compile
-
-let on_xml_downloaded xml =
-  let links = Rss_parser.main xml in
-  links
-  |> List.concat_map (fun (x : Rss_parser.item) -> x.links)
-  |> List.filter (fun (x : Rss_parser.content) -> Re.execp compose_re x.title)
-  |> Array.of_list
-
-let on_scheduled event =
-  let url = "https://developer.android.com/feeds/androidx-release-notes.xml" in
-  let p =
-    Cloudflare.fetch__ url
-    |> next (fun xml ->
-           let rssArray = on_xml_downloaded xml in
-           rssArray
-           |> Array.map (fun rss ->
-                  Cloudflare.fetch__ rss.link
-                  |> next (on_html_downloaded rss (Cloudflare.make_env event))
-                  |> next Cloudflare.execute_request_ )
-           |> Js.array
-           |> fun pall -> U.global ##. Promise##all pall )
-  in
-  event##waitUntil p
+  handle_scheduled_ on_scheduled |> fun p -> event##waitUntil p
 
 let () =
-  let module U = Js_of_ocaml.Js.Unsafe in
-  U.global##addEventListener (U.inject "scheduled")
-    (Js.wrap_callback on_scheduled)
+  Js.Unsafe.global##addEventListener
+    (Js.Unsafe.inject "scheduled")
+    (Js.wrap_callback handle_scheduled)

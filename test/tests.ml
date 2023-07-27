@@ -1,9 +1,16 @@
+open Lib
+
+type bar = {headers: int; foo: string; baz: string -> unit} [@@deriving show]
+
+let () =
+  let actual = show_bar {headers= 7; foo= "42"; baz= (fun _x -> ())} in
+  if actual <> {|{ Tests.headers = 7; foo = "42"; baz = <fun> }|} then
+    failwith actual
+
 let read_sample_file filename =
   let ch = open_in_bin ("../../../test/samples/" ^ filename) in
   let s = really_input_string ch (in_channel_length ch) in
   close_in ch ; s
-
-open Lib
 
 let () =
   let get_new_substring prefix html =
