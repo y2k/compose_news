@@ -11,7 +11,8 @@ COPY --chown=opam bin /app/bin
 COPY --chown=opam lib /app/lib
 COPY --chown=opam test /app/test
 
-RUN eval $(opam env) && make release
+# RUN eval $(opam env) && make release
+RUN eval $(opam env) && sudo dune clean && sudo dune test && sudo dune build bin --profile=release
 
 FROM node:18-alpine3.17
 
