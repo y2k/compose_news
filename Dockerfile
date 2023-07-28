@@ -4,13 +4,11 @@ WORKDIR /app
 
 RUN opam install -y dune ppx_deriving base64 re xml-light yojson angstrom js_of_ocaml js_of_ocaml-ppx
 
-COPY Makefile /app
-COPY dune-project /app
-COPY bin /app/bin
-COPY lib /app/lib
-COPY test /app/test
-
-USER opam
+COPY --chown=opam Makefile /app
+COPY --chown=opam dune-project /app
+COPY --chown=opam bin /app/bin
+COPY --chown=opam lib /app/lib
+COPY --chown=opam test /app/test
 
 RUN eval $(opam env) && make release
 
