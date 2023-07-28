@@ -10,4 +10,4 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-    - run: docker build --build-arg CF_TOKEN=$CF_TOKEN .
+    - run: docker build --build-arg CF_TOKEN=${{ secrets.CF_TOKEN }} .
