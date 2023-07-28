@@ -1,4 +1,5 @@
-FROM ocaml/opam:debian-11-ocaml-5.0
+# FROM ocaml/opam:debian-11-ocaml-5.0
+FROM ocaml/opam:alpine-ocaml-5.0
 
 WORKDIR /app
 
