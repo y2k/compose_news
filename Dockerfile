@@ -10,6 +10,8 @@ COPY bin /app/bin
 COPY lib /app/lib
 COPY test /app/test
 
+USER opam
+
 RUN eval $(opam env) && make release
 
 FROM node:18-alpine3.17
