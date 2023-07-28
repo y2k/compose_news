@@ -1,0 +1,13 @@
+name: Docker CI Build
+
+on:
+  push:
+    branches: [ "master" ]
+
+jobs:
+  build:
+    environment: CI
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - run: docker build --build-arg CF_TOKEN=$CF_TOKEN .
