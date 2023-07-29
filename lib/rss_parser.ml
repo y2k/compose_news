@@ -12,8 +12,6 @@ let get_links xml =
              (let url = Xml.attrib x "href" in
               let start = String.index url '#' + 1 in
               String.sub url start (String.length url - start) ) } )
-(* |> List.filter (fun x ->
-         Str.string_match (Str.regexp {|.+\(material\|foundation\).+|}) x.link 0 ) *)
 
 let main xml_string =
   xml_string |> Xml.parse_string |> Xml.children
