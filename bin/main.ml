@@ -12,11 +12,14 @@ let execute_request (cmd : cmd) =
   in
   Unsafe.global##fetch (Unsafe.inject cmd.url) (mk_req cmd.props)
 
-let make_env () : string StringMap.t =
-  List.to_seq
-    [ ("TG_TOKEN", Unsafe.global ##. TG_TOKEN_)
-    ; ("CHAT_ID", Unsafe.global ##. CHAT_ID_) ]
-  |> StringMap.of_seq
+let get_today () =
+  {|(function() { let now = new Date(); return now.getFullYear() + "-" + (now.getMonth() + 1) + "-" + now.getDate() + "T00:00:00+00:00" })()|}
+  |> Js.Unsafe.js_expr |> Js.to_string |> Date.parse_date
+
+let make_env () : env =
+  { tg_token= Unsafe.global ##. TG_TOKEN_
+  ; chat_id= Unsafe.global ##. CHAT_ID_
+  ; now= get_today () }
 
 let next f p = p##then_ f
 

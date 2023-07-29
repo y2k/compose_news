@@ -1,4 +1,4 @@
-.PHONY: release test build_wrangler wrangler wrangler_schedule
+.PHONY: release test build_wrangler wrangler schedule
 
 release:
 	dune clean && dune test && dune build bin --profile=release
@@ -12,5 +12,5 @@ build_wrangler:
 wrangler:
 	wrangler dev --test-scheduled
 
-wrangler_schedule:
+schedule:
 	curl "http://localhost:8787/__scheduled?cron=*+*+*+*+*"

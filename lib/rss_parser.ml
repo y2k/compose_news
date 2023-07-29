@@ -16,13 +16,12 @@ let get_links xml =
 let main xml_string =
   xml_string |> Xml.parse_string |> Xml.children
   |> List.filter (fun x -> Xml.tag x = "entry")
-  |> List.filteri (fun i _ -> i < 1)
   |> List.map (fun x ->
          x
          |> Xml.fold
               (fun a x ->
                 match (Xml.tag x, Xml.children x) with
-                | "title", [ch] ->
+                | "updated", [ch] ->
                     {a with date= Xml.pcdata ch}
                 | "content", [ch] ->
                     {a with links= get_links (Xml.pcdata ch)}

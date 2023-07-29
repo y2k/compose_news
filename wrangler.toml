@@ -2,7 +2,7 @@ name = "compose_news"
 usage_model = 'bundled'
 compatibility_flags = []
 workers_dev = true
-compatibility_date = "2023-07-28"
+compatibility_date = "2023-07-17"
 node_compat = true
 
 main = "_build/default/bin/main.bc.js"

@@ -1,4 +1,15 @@
 open Lib
+module Date = Core.Date
+
+(* Date time *)
+
+(* 2023-07-26T00:00:00+00:00 *)
+
+let () =
+  let actual = Date.parse_date "2023-07-26T00:00:00+00:00" in
+  if actual <> Date.create 2023 7 26 then failwith "Invalid date"
+
+(*  *)
 
 type bar = {headers: int; foo: string; baz: string -> unit} [@@deriving show]
 
@@ -13,18 +24,22 @@ let read_sample_file filename =
   close_in ch ; s
 
 let () =
-  let actual =
-    {env= Core.StringMap.empty; body= read_sample_file "rss2.xml"}
-    |> Core.on_xml_downloaded |> List.map Core.show_cmd
-    |> List.fold_left ( ^ ) ""
+  let assert_date day _expected : unit =
+    let actual =
+      { env= {tg_token= ""; chat_id= ""; now= Date.create 2023 7 day}
+      ; body= read_sample_file "rss2.xml" }
+      |> Core.on_xml_downloaded |> List.map Core.show_cmd
+      |> List.fold_left ( ^ ) ""
+    in
+    let expected = _expected |> Base64.decode |> Result.get_ok in
+    if actual <> expected then (
+      prerr_endline (Base64.encode_string actual) ;
+      failwith "" )
   in
-  let expected =
-    "eyBDb3JlLnVybCA9CiAgImh0dHBzOi8vZGV2ZWxvcGVyLmFuZHJvaWQuY29tL2pldHBhY2svYW5kcm9pZHgvcmVsZWFzZXMvY29tcG9zZS1hbmltYXRpb24jMS41LjAtcmMwMSI7CiAgcHJvcHMgPSAoQ29yZS5SZXFPYmogW10pOyBjYWxsYmFjayA9IDxmdW4+IH17IENvcmUudXJsID0KICAiaHR0cHM6Ly9kZXZlbG9wZXIuYW5kcm9pZC5jb20vamV0cGFjay9hbmRyb2lkeC9yZWxlYXNlcy9jb21wb3NlLWFuaW1hdGlvbiMxLjYuMC1hbHBoYTAyIjsKICBwcm9wcyA9IChDb3JlLlJlcU9iaiBbXSk7IGNhbGxiYWNrID0gPGZ1bj4gfQ=="
-    |> Base64.decode |> Result.get_ok
-  in
-  if actual <> expected then (
-    prerr_endline (Base64.encode_string actual) ;
-    failwith "" )
+  assert_date 25 "" ;
+  assert_date 26
+    "eyBDb3JlLnVybCA9CiAgImh0dHBzOi8vZGV2ZWxvcGVyLmFuZHJvaWQuY29tL2pldHBhY2svYW5kcm9pZHgvcmVsZWFzZXMvY29tcG9zZS1hbmltYXRpb24jMS41LjAtcmMwMSI7CiAgcHJvcHMgPSAoQ29yZS5SZXFPYmogW10pOyBjYWxsYmFjayA9IDxmdW4+IH17IENvcmUudXJsID0KICAiaHR0cHM6Ly9kZXZlbG9wZXIuYW5kcm9pZC5jb20vamV0cGFjay9hbmRyb2lkeC9yZWxlYXNlcy9jb21wb3NlLWFuaW1hdGlvbiMxLjYuMC1hbHBoYTAyIjsKICBwcm9wcyA9IChDb3JlLlJlcU9iaiBbXSk7IGNhbGxiYWNrID0gPGZ1bj4gfQ==" ;
+  assert_date 27 ""
 
 let () =
   let rss = read_sample_file "sample3.html" in
@@ -32,8 +47,7 @@ let () =
     Core.on_http_downloaded
       {title= "title"; link= "link"; version= "1.5.0-rc01"}
       { env=
-          Core.StringMap.of_seq
-            (List.to_seq [("TG_TOKEN", "TG_TOKEN"); ("CHAT_ID", "CHAT_ID")])
+          {tg_token= "TG_TOKEN"; chat_id= "CHAT_ID"; now= Date.create 2023 1 1}
       ; body= rss }
   in
   let actual = cmds |> List.map Core.show_cmd |> List.fold_left ( ^ ) "" in
@@ -51,8 +65,7 @@ let () =
     Core.on_http_downloaded
       {title= "title"; link= "link"; version= "1.1.0"}
       { env=
-          Core.StringMap.of_seq
-            (List.to_seq [("TG_TOKEN", "TG_TOKEN"); ("CHAT_ID", "CHAT_ID")])
+          {tg_token= "TG_TOKEN"; chat_id= "CHAT_ID"; now= Date.create 2023 1 1}
       ; body= rss }
   in
   let actual = cmds |> List.map Core.show_cmd |> List.fold_left ( ^ ) "" in

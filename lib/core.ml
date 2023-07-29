@@ -7,6 +7,28 @@ module StringMap = struct
     Format.fprintf ppf "}"
 end
 
+module Date : sig
+  type t [@@deriving show]
+
+  val create : int -> int -> int -> t
+
+  val parse_date : string -> t
+
+  val compare : t -> t -> int
+end = struct
+  type t = int * int * int [@@deriving show]
+
+  let create year month day = (year, month, day)
+
+  let parse_date date_str =
+    Scanf.sscanf date_str "%d-%d-%dT" (fun year month day -> (year, month, day))
+
+  let compare (y1, m1, d1) (y2, m2, d2) =
+    Int.compare (y1 + 10000 + (m1 * 100) + d1) (y2 + 10000 + (m2 * 100) + d2)
+end
+
+type env = {tg_token: string; chat_id: string; now: Date.t} [@@deriving show]
+
 module ClearText : sig
   val translate : string -> string
 
@@ -48,7 +70,7 @@ end = struct
     input |> remove_issue |> decode_html
 end
 
-type msg = {env: string StringMap.t; body: string} [@@deriving show]
+type msg = {env: env; body: string} [@@deriving show]
 
 type req_props = ReqValue of string | ReqObj of (string * req_props) list
 [@@deriving show]
@@ -56,15 +78,12 @@ type req_props = ReqValue of string | ReqObj of (string * req_props) list
 type cmd = {url: string; props: req_props; callback: msg -> cmd list}
 [@@deriving show]
 
-let make_telegram_request env (new_message : string) =
+let make_telegram_request (env : env) (new_message : string) =
   let url =
-    Printf.sprintf "https://api.telegram.org/bot%s/sendMessage"
-      (StringMap.find "TG_TOKEN" env)
+    Printf.sprintf "https://api.telegram.org/bot%s/sendMessage" env.tg_token
   in
   let body =
-    `Assoc
-      [ ("chat_id", `String (StringMap.find "CHAT_ID" env))
-      ; ("text", `String new_message) ]
+    `Assoc [("chat_id", `String env.chat_id); ("text", `String new_message)]
     |> Yojson.Safe.to_string
   in
   { url
@@ -91,6 +110,8 @@ let compose_re = Re.str "ompose" |> Re.compile
 
 let on_xml_downloaded msg =
   Rss_parser.main msg.body
+  |> List.filter (fun (x : Rss_parser.item) ->
+         Date.parse_date x.date = msg.env.now )
   |> List.concat_map (fun (x : Rss_parser.item) -> x.links)
   |> List.filter (fun (x : Rss_parser.content) -> Re.execp compose_re x.title)
   |> List.filteri (fun i _ -> i < 2)
