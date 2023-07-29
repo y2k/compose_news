@@ -114,7 +114,6 @@ let on_xml_downloaded msg =
          Date.parse_date x.date = msg.env.now )
   |> List.concat_map (fun (x : Rss_parser.item) -> x.links)
   |> List.filter (fun (x : Rss_parser.content) -> Re.execp compose_re x.title)
-  |> List.filteri (fun i _ -> i < 2)
   |> List.map (fun (x : Rss_parser.content) ->
          {url= x.link; props= ReqObj []; callback= on_http_downloaded x} )
 

@@ -3,8 +3,6 @@ module Date = Core.Date
 
 (* Date time *)
 
-(* 2023-07-26T00:00:00+00:00 *)
-
 let () =
   let actual = Date.parse_date "2023-07-26T00:00:00+00:00" in
   if actual <> Date.create 2023 7 26 then failwith "Invalid date"
@@ -23,6 +21,22 @@ let read_sample_file filename =
   let s = really_input_string ch (in_channel_length ch) in
   close_in ch ; s
 
+module TextComparer : sig
+  val compare_2_txt : string -> string -> unit
+end = struct
+  let save_string_to_temp_file string =
+    let temp_file_path = Filename.temp_file "compare" "" in
+    let oc = open_out temp_file_path in
+    Fun.protect
+      (fun _ -> output_string oc string ; temp_file_path)
+      ~finally:(fun _ -> close_out oc)
+
+  let compare_2_txt sample1 sample2 =
+    let tmp1 = save_string_to_temp_file sample1 in
+    let tmp2 = save_string_to_temp_file sample2 in
+    Sys.command @@ Printf.sprintf "diff -u %s %s" tmp1 tmp2 |> ignore
+end
+
 let () =
   let assert_date day _expected : unit =
     let actual =
@@ -33,12 +47,16 @@ let () =
     in
     let expected = _expected |> Base64.decode |> Result.get_ok in
     if actual <> expected then (
-      prerr_endline (Base64.encode_string actual) ;
-      failwith "" )
+      TextComparer.compare_2_txt expected actual ;
+      (* TextComparer.compare_2_txt "bbb\nccc\nddd\n" "aaa\nbbb\nccc\n" ; *)
+      prerr_endline @@ "========================\n"
+      ^ Base64.encode_string actual
+      ^ "\n========================" ;
+      exit 1 )
   in
   assert_date 25 "" ;
   assert_date 26
-    "eyBDb3JlLnVybCA9CiAgImh0dHBzOi8vZGV2ZWxvcGVyLmFuZHJvaWQuY29tL2pldHBhY2svYW5kcm9pZHgvcmVsZWFzZXMvY29tcG9zZS1hbmltYXRpb24jMS41LjAtcmMwMSI7CiAgcHJvcHMgPSAoQ29yZS5SZXFPYmogW10pOyBjYWxsYmFjayA9IDxmdW4+IH17IENvcmUudXJsID0KICAiaHR0cHM6Ly9kZXZlbG9wZXIuYW5kcm9pZC5jb20vamV0cGFjay9hbmRyb2lkeC9yZWxlYXNlcy9jb21wb3NlLWFuaW1hdGlvbiMxLjYuMC1hbHBoYTAyIjsKICBwcm9wcyA9IChDb3JlLlJlcU9iaiBbXSk7IGNhbGxiYWNrID0gPGZ1bj4gfQ==" ;
+    "eyBDb3JlLnVybCA9CiAgImh0dHBzOi8vZGV2ZWxvcGVyLmFuZHJvaWQuY29tL2pldHBhY2svYW5kcm9pZHgvcmVsZWFzZXMvY29tcG9zZS1hbmltYXRpb24jMS41LjAtcmMwMSI7CiAgcHJvcHMgPSAoQ29yZS5SZXFPYmogW10pOyBjYWxsYmFjayA9IDxmdW4+IH17IENvcmUudXJsID0KICAiaHR0cHM6Ly9kZXZlbG9wZXIuYW5kcm9pZC5jb20vamV0cGFjay9hbmRyb2lkeC9yZWxlYXNlcy9jb21wb3NlLWFuaW1hdGlvbiMxLjYuMC1hbHBoYTAyIjsKICBwcm9wcyA9IChDb3JlLlJlcU9iaiBbXSk7IGNhbGxiYWNrID0gPGZ1bj4gfXsgQ29yZS51cmwgPQogICJodHRwczovL2RldmVsb3Blci5hbmRyb2lkLmNvbS9qZXRwYWNrL2FuZHJvaWR4L3JlbGVhc2VzL2NvbXBvc2UtY29tcGlsZXIjMS41LjEiOwogIHByb3BzID0gKENvcmUuUmVxT2JqIFtdKTsgY2FsbGJhY2sgPSA8ZnVuPiB9eyBDb3JlLnVybCA9CiAgImh0dHBzOi8vZGV2ZWxvcGVyLmFuZHJvaWQuY29tL2pldHBhY2svYW5kcm9pZHgvcmVsZWFzZXMvY29tcG9zZS1mb3VuZGF0aW9uIzEuNS4wLXJjMDEiOwogIHByb3BzID0gKENvcmUuUmVxT2JqIFtdKTsgY2FsbGJhY2sgPSA8ZnVuPiB9eyBDb3JlLnVybCA9CiAgImh0dHBzOi8vZGV2ZWxvcGVyLmFuZHJvaWQuY29tL2pldHBhY2svYW5kcm9pZHgvcmVsZWFzZXMvY29tcG9zZS1mb3VuZGF0aW9uIzEuNi4wLWFscGhhMDIiOwogIHByb3BzID0gKENvcmUuUmVxT2JqIFtdKTsgY2FsbGJhY2sgPSA8ZnVuPiB9eyBDb3JlLnVybCA9CiAgImh0dHBzOi8vZGV2ZWxvcGVyLmFuZHJvaWQuY29tL2pldHBhY2svYW5kcm9pZHgvcmVsZWFzZXMvY29tcG9zZS1tYXRlcmlhbCMxLjUuMC1yYzAxIjsKICBwcm9wcyA9IChDb3JlLlJlcU9iaiBbXSk7IGNhbGxiYWNrID0gPGZ1bj4gfXsgQ29yZS51cmwgPQogICJodHRwczovL2RldmVsb3Blci5hbmRyb2lkLmNvbS9qZXRwYWNrL2FuZHJvaWR4L3JlbGVhc2VzL2NvbXBvc2UtbWF0ZXJpYWwjMS42LjAtYWxwaGEwMiI7CiAgcHJvcHMgPSAoQ29yZS5SZXFPYmogW10pOyBjYWxsYmFjayA9IDxmdW4+IH17IENvcmUudXJsID0KICAiaHR0cHM6Ly9kZXZlbG9wZXIuYW5kcm9pZC5jb20vamV0cGFjay9hbmRyb2lkeC9yZWxlYXNlcy9jb21wb3NlLW1hdGVyaWFsMyMxLjIuMC1hbHBoYTA0IjsKICBwcm9wcyA9IChDb3JlLlJlcU9iaiBbXSk7IGNhbGxiYWNrID0gPGZ1bj4gfXsgQ29yZS51cmwgPQogICJodHRwczovL2RldmVsb3Blci5hbmRyb2lkLmNvbS9qZXRwYWNrL2FuZHJvaWR4L3JlbGVhc2VzL2NvbXBvc2UtcnVudGltZSMxLjUuMC1yYzAxIjsKICBwcm9wcyA9IChDb3JlLlJlcU9iaiBbXSk7IGNhbGxiYWNrID0gPGZ1bj4gfXsgQ29yZS51cmwgPQogICJodHRwczovL2RldmVsb3Blci5hbmRyb2lkLmNvbS9qZXRwYWNrL2FuZHJvaWR4L3JlbGVhc2VzL2NvbXBvc2UtcnVudGltZSMxLjYuMC1hbHBoYTAyIjsKICBwcm9wcyA9IChDb3JlLlJlcU9iaiBbXSk7IGNhbGxiYWNrID0gPGZ1bj4gfXsgQ29yZS51cmwgPQogICJodHRwczovL2RldmVsb3Blci5hbmRyb2lkLmNvbS9qZXRwYWNrL2FuZHJvaWR4L3JlbGVhc2VzL2NvbXBvc2UtdWkjMS41LjAtcmMwMSI7CiAgcHJvcHMgPSAoQ29yZS5SZXFPYmogW10pOyBjYWxsYmFjayA9IDxmdW4+IH17IENvcmUudXJsID0KICAiaHR0cHM6Ly9kZXZlbG9wZXIuYW5kcm9pZC5jb20vamV0cGFjay9hbmRyb2lkeC9yZWxlYXNlcy9jb21wb3NlLXVpIzEuNi4wLWFscGhhMDIiOwogIHByb3BzID0gKENvcmUuUmVxT2JqIFtdKTsgY2FsbGJhY2sgPSA8ZnVuPiB9eyBDb3JlLnVybCA9CiAgImh0dHBzOi8vZGV2ZWxvcGVyLmFuZHJvaWQuY29tL2pldHBhY2svYW5kcm9pZHgvcmVsZWFzZXMvY29uc3RyYWludGxheW91dCMxLjEuMC1hbHBoYTExIjsKICBwcm9wcyA9IChDb3JlLlJlcU9iaiBbXSk7IGNhbGxiYWNrID0gPGZ1bj4gfXsgQ29yZS51cmwgPQogICJodHRwczovL2RldmVsb3Blci5hbmRyb2lkLmNvbS9qZXRwYWNrL2FuZHJvaWR4L3JlbGVhc2VzL3dlYXItY29tcG9zZSMxLjMuMC1hbHBoYTAyIjsKICBwcm9wcyA9IChDb3JlLlJlcU9iaiBbXSk7IGNhbGxiYWNrID0gPGZ1bj4gfXsgQ29yZS51cmwgPQogICJodHRwczovL2RldmVsb3Blci5hbmRyb2lkLmNvbS9qZXRwYWNrL2FuZHJvaWR4L3JlbGVhc2VzL3dlYXItY29tcG9zZSMxLjAuMC1hbHBoYTA4IjsKICBwcm9wcyA9IChDb3JlLlJlcU9iaiBbXSk7IGNhbGxiYWNrID0gPGZ1bj4gfXsgQ29yZS51cmwgPQogICJodHRwczovL2RldmVsb3Blci5hbmRyb2lkLmNvbS9qZXRwYWNrL2FuZHJvaWR4L3JlbGVhc2VzL3dlYXItY29tcG9zZSMxLjIuMC1yYzAxIjsKICBwcm9wcyA9IChDb3JlLlJlcU9iaiBbXSk7IGNhbGxiYWNrID0gPGZ1bj4gfQ==" ;
   assert_date 27 ""
 
 let () =
