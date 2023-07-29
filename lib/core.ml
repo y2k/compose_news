@@ -7,7 +7,11 @@ module StringMap = struct
     Format.fprintf ppf "}"
 end
 
-module ClearText = struct
+module ClearText : sig
+  val translate : string -> string
+
+  val clear_text : string -> string
+end = struct
   let translate = function
     | "Bug Fixes" ->
         "Исправление ошибок"
