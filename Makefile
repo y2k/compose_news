@@ -16,4 +16,4 @@ schedule:
 	curl "http://localhost:8787/__scheduled?cron=*+*+*+*+*"
 
 update_base:
-	docker build -f Dockerfile.Base -t y2khub/compose-news-base . && docker push y2khub/compose-news-base
+	docker build -f Dockerfile.Base -t y2khub/compose-news-base --platform linux/amd64 . && docker push y2khub/compose-news-base
