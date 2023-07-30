@@ -1,33 +1,4 @@
-module StringMap = struct
-  include Map.Make (String)
-
-  let pp _ ppf m =
-    Format.fprintf ppf "{" ;
-    iter (Format.fprintf ppf "\"%s\": \"%s\"; ") m ;
-    Format.fprintf ppf "}"
-end
-
-module Date : sig
-  type t [@@deriving show]
-
-  val create : int -> int -> int -> t
-
-  val parse_date : string -> t
-
-  val compare : t -> t -> int
-end = struct
-  type t = int * int * int [@@deriving show]
-
-  let create year month day = (year, month, day)
-
-  let parse_date date_str =
-    Scanf.sscanf date_str "%d-%d-%dT" (fun year month day -> (year, month, day))
-
-  let compare (y1, m1, d1) (y2, m2, d2) =
-    Int.compare (y1 + 10000 + (m1 * 100) + d1) (y2 + 10000 + (m2 * 100) + d2)
-end
-
-type env = {tg_token: string; chat_id: string; now: Date.t} [@@deriving show]
+open Utils
 
 module ClearText : sig
   val translate : string -> string
@@ -70,6 +41,8 @@ end = struct
     input |> remove_issue |> decode_html
 end
 
+type env = {tg_token: string; chat_id: string; now: Date.t} [@@deriving show]
+
 type msg = {env: env; body: string} [@@deriving show]
 
 type req_props = ReqValue of string | ReqObj of (string * req_props) list
@@ -78,21 +51,24 @@ type req_props = ReqValue of string | ReqObj of (string * req_props) list
 type cmd = {url: string; props: req_props; callback: msg -> cmd list}
 [@@deriving show]
 
-let make_telegram_request (env : env) (new_message : string) =
-  let url =
-    Printf.sprintf "https://api.telegram.org/bot%s/sendMessage" env.tg_token
-  in
-  let body =
-    `Assoc [("chat_id", `String env.chat_id); ("text", `String new_message)]
-    |> Yojson.Safe.to_string
-  in
-  { url
-  ; props=
-      ReqObj
-        [ ("body", ReqValue body)
-        ; ("method", ReqValue "post")
-        ; ("headers", ReqObj [("content-type", ReqValue "application/json")]) ]
-  ; callback= (fun _ -> []) }
+module Telegram = struct
+  let make_telegram_request (env : env) (new_message : string) =
+    let url =
+      Printf.sprintf "https://api.telegram.org/bot%s/sendMessage" env.tg_token
+    in
+    let body =
+      `Assoc [("chat_id", `String env.chat_id); ("text", `String new_message)]
+      |> Yojson.Safe.to_string
+    in
+    { url
+    ; props=
+        ReqObj
+          [ ("body", ReqValue body)
+          ; ("method", ReqValue "post")
+          ; ("headers", ReqObj [("content-type", ReqValue "application/json")])
+          ]
+    ; callback= (fun _ -> []) }
+end
 
 let on_http_downloaded (rss : Rss_parser.content) (msg : msg) =
   msg.body
@@ -103,7 +79,7 @@ let on_http_downloaded (rss : Rss_parser.content) (msg : msg) =
               (fun state x -> state ^ "\n- " ^ ClearText.clear_text x)
               ("[ " ^ ClearText.translate x.title ^ " ]") )
   |> List.fold_left (Printf.sprintf "%s\n%s") (rss.title ^ "\n")
-  |> make_telegram_request msg.env
+  |> Telegram.make_telegram_request msg.env
   |> fun x -> [x]
 
 let compose_re = Re.str "ompose" |> Re.compile

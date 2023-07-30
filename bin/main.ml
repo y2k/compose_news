@@ -14,7 +14,7 @@ let execute_request (cmd : cmd) =
 
 let get_today () =
   {|(function() { let now = new Date(); return now.getFullYear() + "-" + (now.getMonth() + 1) + "-" + now.getDate() + "T00:00:00+00:00" })()|}
-  |> Js.Unsafe.js_expr |> Js.to_string |> Date.parse_date
+  |> Js.Unsafe.js_expr |> Js.to_string |> Lib.Utils.Date.parse_date
 
 let make_env () : env =
   { tg_token= Unsafe.global ##. TG_TOKEN_

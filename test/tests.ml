@@ -1,5 +1,5 @@
 open Lib
-module Date = Core.Date
+module Date = Utils.Date
 
 (* Date time *)
 
@@ -18,8 +18,9 @@ let () =
 
 let read_sample_file filename =
   let ch = open_in_bin ("../../../test/samples/" ^ filename) in
-  let s = really_input_string ch (in_channel_length ch) in
-  close_in ch ; s
+  Fun.protect
+    (fun _ -> really_input_string ch (in_channel_length ch))
+    ~finally:(fun _ -> close_in ch)
 
 module TextComparer : sig
   val compare_2_txt : string -> string -> unit
