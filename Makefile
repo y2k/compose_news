@@ -17,3 +17,6 @@ schedule:
 
 update_base:
 	docker build -f Dockerfile.Base -t y2khub/compose-news-base --platform linux/amd64 . && docker push y2khub/compose-news-base
+
+update_wrangler:
+	docker build -f Dockerfile.Wrangler -t y2khub/compose-news.wrangler --platform linux/amd64 . && docker push y2khub/compose-news.wrangler
