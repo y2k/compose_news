@@ -41,7 +41,11 @@ end
 let () =
   let assert_date day _expected : unit =
     let actual =
-      { env= {tg_token= ""; chat_id= ""; now= Date.create 2023 7 day}
+      { env=
+          { tg_token= "54cb21d69510"
+          ; chat_id= "ff5a0d963c75"
+          ; telegraph_token= "e43a8cbce190"
+          ; now= Date.create 2023 7 day }
       ; body= read_sample_file "rss2.xml" }
       |> Core.on_xml_downloaded |> List.map Core.show_cmd
       |> List.fold_left ( ^ ) ""
@@ -66,7 +70,10 @@ let () =
     Core.on_http_downloaded
       {title= "title"; link= "link"; version= "1.5.0-rc01"}
       { env=
-          {tg_token= "TG_TOKEN"; chat_id= "CHAT_ID"; now= Date.create 2023 1 1}
+          { tg_token= "TG_TOKEN"
+          ; chat_id= "CHAT_ID"
+          ; telegraph_token= "e43a8cbce190"
+          ; now= Date.create 2023 1 1 }
       ; body= rss }
   in
   let actual = cmds |> List.map Core.show_cmd |> List.fold_left ( ^ ) "" in
@@ -84,7 +91,10 @@ let () =
     Core.on_http_downloaded
       {title= "title"; link= "link"; version= "1.1.0"}
       { env=
-          {tg_token= "TG_TOKEN"; chat_id= "CHAT_ID"; now= Date.create 2023 1 1}
+          { tg_token= "TG_TOKEN"
+          ; chat_id= "CHAT_ID"
+          ; telegraph_token= "e43a8cbce190"
+          ; now= Date.create 2023 1 1 }
       ; body= rss }
   in
   let actual = cmds |> List.map Core.show_cmd |> List.fold_left ( ^ ) "" in

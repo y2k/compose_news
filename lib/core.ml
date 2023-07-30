@@ -41,7 +41,9 @@ end = struct
     input |> remove_issue |> decode_html
 end
 
-type env = {tg_token: string; chat_id: string; now: Date.t} [@@deriving show]
+type env =
+  {tg_token: string; chat_id: string; telegraph_token: string; now: Date.t}
+[@@deriving show]
 
 type msg = {env: env; body: string} [@@deriving show]
 

@@ -19,6 +19,7 @@ let get_today () =
 let make_env () : env =
   { tg_token= Unsafe.global ##. TG_TOKEN_
   ; chat_id= Unsafe.global ##. CHAT_ID_
+  ; telegraph_token= Unsafe.global ##. TELEGRAPH_TOKEN_
   ; now= get_today () }
 
 let next f p = p##then_ f
