@@ -1,6 +1,8 @@
 open Lib
 module Date = Utils.Date
 
+let () = Test_effects.main ()
+
 (* Date time *)
 
 let () =
