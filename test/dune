@@ -1,4 +1,6 @@
 (test
+ (flags
+  (:standard -warn-error -A))
  (name tests)
  (libraries lib str re base64)
  (preprocess
