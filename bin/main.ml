@@ -2,7 +2,7 @@ open Js_of_ocaml
 module Unsafe = Js.Unsafe
 open Lib.Core
 
-let execute_request (cmd : cmd) =
+(* let execute_request (cmd : cmd) =
   let rec mk_req = function
     | ReqObj props ->
         Unsafe.obj
@@ -22,9 +22,9 @@ let make_env () : env =
   ; telegraph_token= Unsafe.global ##. TELEGRAPH_TOKEN_
   ; now= get_today () }
 
-let next f p = p##then_ f
+let next f p = p##then_ f *)
 
-let handle_scheduled event =
+(* let handle_scheduled event =
   let env = make_env () in
   let rec handle_scheduled_ props =
     let download (prop : cmd) =
@@ -41,4 +41,4 @@ let handle_scheduled event =
 let () =
   Js.Unsafe.global##addEventListener
     (Js.Unsafe.inject "scheduled")
-    (Js.wrap_callback handle_scheduled)
+    (Js.wrap_callback handle_scheduled) *)

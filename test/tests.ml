@@ -1,7 +1,7 @@
 open Lib
 module Date = Utils.Date
 
-let () = Test_effects.main ()
+let _ = Test_effects.main ()
 
 (* Date time *)
 
@@ -40,26 +40,83 @@ end = struct
     Sys.command @@ Printf.sprintf "diff -u %s %s" tmp1 tmp2 |> ignore
 end
 
-let () =
-  let assert_date day _expected : unit =
-    let actual =
+let assert_and_show_diff actual expected =
+  if actual <> expected then (
+    TextComparer.compare_2_txt expected actual ;
+    prerr_endline @@ "========================\n"
+    ^ Base64.encode_string actual
+    ^ "\n========================" ;
+    failwith "" |> ignore )
+
+let get_actual (file_name : string) version : string =
+  let logs : _ list ref = ref [] in
+  Command.attach_handler Core.Commands.download (fun (url, props) ->
+      let rec serialize_props (p : Core.req_props) =
+        match p with
+        | Core.ReqValue x ->
+            `String x
+        | Core.ReqObj xs ->
+            `Assoc (xs |> List.map (fun (k, v) -> (k, serialize_props v)))
+      in
+      let ji =
+        `Assoc [("url", `String url); ("props", serialize_props props)]
+        |> Yojson.Safe.pretty_to_string
+      in
+      logs := ji :: !logs ;
       { env=
-          { tg_token= "54cb21d69510"
-          ; chat_id= "ff5a0d963c75"
+          { tg_token= "TG_TOKEN"
+          ; chat_id= "CHAT_ID"
           ; telegraph_token= "e43a8cbce190"
-          ; now= Date.create 2023 7 day }
-      ; body= read_sample_file "rss2.xml" }
-      |> Core.on_xml_downloaded |> List.map Core.show_cmd
-      |> List.fold_left ( ^ ) ""
-    in
-    let expected = _expected |> Base64.decode |> Result.get_ok in
-    if actual <> expected then (
-      TextComparer.compare_2_txt expected actual ;
-      (* TextComparer.compare_2_txt "bbb\nccc\nddd\n" "aaa\nbbb\nccc\n" ; *)
-      prerr_endline @@ "========================\n"
-      ^ Base64.encode_string actual
-      ^ "\n========================" ;
-      exit 1 )
+          ; now= Date.create 2023 1 1 }
+      ; body= "" } ) ;
+  Core.on_http_downloaded
+    [{title= "title"; link= "link"; version}]
+    [ { env=
+          { tg_token= "TG_TOKEN"
+          ; chat_id= "CHAT_ID"
+          ; telegraph_token= "e43a8cbce190"
+          ; now= Date.create 2023 1 1 }
+      ; body= read_sample_file file_name } ]
+  |> fun f ->
+  f Command.World ;
+  !logs |> List.fold_left ( ^ ) ""
+
+let get_actual_2 (file_name : string) day : string =
+  let logs : _ list ref = ref [] in
+  Command.attach_handler Core.Commands.download (fun (url, props) ->
+      let rec serialize_props (p : Core.req_props) =
+        match p with
+        | Core.ReqValue x ->
+            `String x
+        | Core.ReqObj xs ->
+            `Assoc (xs |> List.map (fun (k, v) -> (k, serialize_props v)))
+      in
+      let ji =
+        `Assoc [("url", `String url); ("props", serialize_props props)]
+        |> Yojson.Safe.pretty_to_string
+      in
+      logs := ji :: !logs ;
+      { env=
+          { tg_token= "TG_TOKEN"
+          ; chat_id= "CHAT_ID"
+          ; telegraph_token= "e43a8cbce190"
+          ; now= Date.create 2023 1 1 }
+      ; body= "" } ) ;
+  Core.on_xml_downloaded
+    { env=
+        { tg_token= "TG_TOKEN"
+        ; chat_id= "CHAT_ID"
+        ; telegraph_token= "e43a8cbce190"
+        ; now= Date.create 2023 1 day }
+    ; body= read_sample_file file_name }
+  |> fun f ->
+  f Command.World ;
+  !logs |> List.fold_left ( ^ ) ""
+
+let () =
+  let assert_date day expected : unit =
+    let actual = get_actual_2 "rss2.xml" day in
+    assert_and_show_diff actual expected
   in
   assert_date 25 "" ;
   assert_date 26
@@ -67,46 +124,20 @@ let () =
   assert_date 27 ""
 
 let () =
-  let rss = read_sample_file "sample3.html" in
-  let cmds =
-    Core.on_http_downloaded
-      {title= "title"; link= "link"; version= "1.5.0-rc01"}
-      { env=
-          { tg_token= "TG_TOKEN"
-          ; chat_id= "CHAT_ID"
-          ; telegraph_token= "e43a8cbce190"
-          ; now= Date.create 2023 1 1 }
-      ; body= rss }
-  in
-  let actual = cmds |> List.map Core.show_cmd |> List.fold_left ( ^ ) "" in
+  let actual = get_actual "sample3.html" "1.5.0-rc01" in
   let expected =
-    "eyBDb3JlLnVybCA9ICJodHRwczovL2FwaS50ZWxlZ3JhbS5vcmcvYm90VEdfVE9LRU4vc2VuZE1lc3NhZ2UiOwogIHByb3BzID0KICAoQ29yZS5SZXFPYmoKICAgICBbKCJib2R5IiwKICAgICAgIChDb3JlLlJlcVZhbHVlCiAgICAgICAgICAie1wiY2hhdF9pZFwiOlwiQ0hBVF9JRFwiLFwidGV4dFwiOlwidGl0bGVcXG5cXG5bIFwyMDhcMTUyXDIwOVwxMjlcMjA4XDE5MVwyMDlcMTI4XDIwOFwxNzZcMjA4XDE3OFwyMDhcMTg3XDIwOFwxODFcMjA4XDE4OVwyMDhcMTg0XDIwOFwxODEgXDIwOFwxOTBcMjA5XDEzNlwyMDhcMTg0XDIwOFwxNzdcMjA4XDE5MFwyMDhcMTg2IF1cXG4tIEZpeGVkIGFuIGlzc3VlIHdoZXJlIGNhbGxpbmcgLnZhbHVlIG9uIGEgcHJpbWl0aXZlIHN0YXRlIHR5cGUgd291bGQgcmVwb3J0IGEgbGludCB3YXJuaW5nIHdpdGggYW4gaW52YWxpZCBmaXguIFRoZSBpbnNwZWN0aW9uIHdpbGwgbm93IHJlY29tbWVuZCBtaWdyYXRpbmcgdG8gdGhlIGNvcnJlY3QgcHJvcGVydHkuXFxuLSBBbiBvcHRpb25hbCBpbnNwZWN0aW9uIHRvIHJlY29tbWVuZCBtaWdyYXRpbmcgbXV0YWJsZVN0YXRlT2YoKSBjYWxscyB0byB0aGVpciBjb3JyZXNwb25kaW5nIHNwZWNpYWxpemVkIHR5cGVzIGZvciBwcmltaXRpdmVzIGlzIGF2YWlsYWJsZS4gSXRzIGxpbnQgSUQgaXMgQXV0b2JveGluZ1N0YXRlQ3JlYXRpb24uIFByZXZpb3VzbHksIHRoaXMgaW5zcGVjdGlvbiB3YXMgZW5hYmxlZCBieSBkZWZhdWx0IGZvciBhbGwgcHJvamVjdHMuIFRvIHNlZSB0aGlzIHdhcm5pbmcgaW4gQW5kcm9pZCBTdHVkaW8ncyBlZGl0b3IgYW5kIHlvdXIgcHJvamVjdCdzIGxpbnQgb3V0cHV0cywgY2hhbmdlIGl0cyBzZXZlcml0eSBmcm9tIGluZm9ybWF0aW9uYWwgdG8gd2FybmluZyBieSBkZWNsYXJpbmcgd2FybmluZyBcXFwiQXV0b2JveGluZ1N0YXRlQ3JlYXRpb25cXFwiIGluc2lkZSB5b3VyIG1vZHVsZSdzIGJ1aWxkLmdyYWRsZSBvciBidWlsZC5ncmFkbGUua3RzIGNvbmZpZ3VyYXRpb24gYXMgc2hvd246ICAgICBhbmRyb2lkIHsgICAgICAgICBsaW50IHsgICAgICAgICAgICAgd2FybmluZyBcXFwiQXV0b2JveGluZ1N0YXRlQ3JlYXRpb25cXFwiICAgICAgICAgfSAgICAgICAgIC4uLiAgICAgfSBcIn0iKSk7CiAgICAgICAoIm1ldGhvZCIsIChDb3JlLlJlcVZhbHVlICJwb3N0IikpOwogICAgICAgKCJoZWFkZXJzIiwKICAgICAgICAoQ29yZS5SZXFPYmogWygiY29udGVudC10eXBlIiwgKENvcmUuUmVxVmFsdWUgImFwcGxpY2F0aW9uL2pzb24iKSldKSkKICAgICAgIF0pOwogIGNhbGxiYWNrID0gPGZ1bj4gfQ=="
+    "ewogICJ1cmwiOiAiaHR0cHM6Ly9hcGkudGVsZWdyYW0ub3JnL2JvdFRHX1RPS0VOL3NlbmRNZXNzYWdlIiwKICAicHJvcHMiOiB7CiAgICAiYm9keSI6ICJ7XCJjaGF0X2lkXCI6XCJDSEFUX0lEXCIsXCJ0ZXh0XCI6XCJcXG50aXRsZVxcblxcblsg0JjRgdC/0YDQsNCy0LvQtdC90LjQtSDQvtGI0LjQsdC+0LogXVxcbi0gRml4ZWQgYW4gaXNzdWUgd2hlcmUgY2FsbGluZyAudmFsdWUgb24gYSBwcmltaXRpdmUgc3RhdGUgdHlwZSB3b3VsZCByZXBvcnQgYSBsaW50IHdhcm5pbmcgd2l0aCBhbiBpbnZhbGlkIGZpeC4gVGhlIGluc3BlY3Rpb24gd2lsbCBub3cgcmVjb21tZW5kIG1pZ3JhdGluZyB0byB0aGUgY29ycmVjdCBwcm9wZXJ0eS5cXG4tIEFuIG9wdGlvbmFsIGluc3BlY3Rpb24gdG8gcmVjb21tZW5kIG1pZ3JhdGluZyBtdXRhYmxlU3RhdGVPZigpIGNhbGxzIHRvIHRoZWlyIGNvcnJlc3BvbmRpbmcgc3BlY2lhbGl6ZWQgdHlwZXMgZm9yIHByaW1pdGl2ZXMgaXMgYXZhaWxhYmxlLiBJdHMgbGludCBJRCBpcyBBdXRvYm94aW5nU3RhdGVDcmVhdGlvbi4gUHJldmlvdXNseSwgdGhpcyBpbnNwZWN0aW9uIHdhcyBlbmFibGVkIGJ5IGRlZmF1bHQgZm9yIGFsbCBwcm9qZWN0cy4gVG8gc2VlIHRoaXMgd2FybmluZyBpbiBBbmRyb2lkIFN0dWRpbydzIGVkaXRvciBhbmQgeW91ciBwcm9qZWN0J3MgbGludCBvdXRwdXRzLCBjaGFuZ2UgaXRzIHNldmVyaXR5IGZyb20gaW5mb3JtYXRpb25hbCB0byB3YXJuaW5nIGJ5IGRlY2xhcmluZyB3YXJuaW5nIFxcXCJBdXRvYm94aW5nU3RhdGVDcmVhdGlvblxcXCIgaW5zaWRlIHlvdXIgbW9kdWxlJ3MgYnVpbGQuZ3JhZGxlIG9yIGJ1aWxkLmdyYWRsZS5rdHMgY29uZmlndXJhdGlvbiBhcyBzaG93bjogICAgIGFuZHJvaWQgeyAgICAgICAgIGxpbnQgeyAgICAgICAgICAgICB3YXJuaW5nIFxcXCJBdXRvYm94aW5nU3RhdGVDcmVhdGlvblxcXCIgICAgICAgICB9ICAgICAgICAgLi4uICAgICB9IFwifSIsCiAgICAibWV0aG9kIjogInBvc3QiLAogICAgImhlYWRlcnMiOiB7ICJjb250ZW50LXR5cGUiOiAiYXBwbGljYXRpb24vanNvbiIgfQogIH0KfQ=="
     |> Base64.decode |> Result.get_ok
   in
-  if actual <> expected then (
-    prerr_endline (Base64.encode_string actual) ;
-    failwith "" )
+  assert_and_show_diff actual expected
 
 let () =
-  let rss = read_sample_file "sample2.html" in
-  let cmds =
-    Core.on_http_downloaded
-      {title= "title"; link= "link"; version= "1.1.0"}
-      { env=
-          { tg_token= "TG_TOKEN"
-          ; chat_id= "CHAT_ID"
-          ; telegraph_token= "e43a8cbce190"
-          ; now= Date.create 2023 1 1 }
-      ; body= rss }
-  in
-  let actual = cmds |> List.map Core.show_cmd |> List.fold_left ( ^ ) "" in
+  let actual = get_actual "sample2.html" "1.1.0" in
   let expected =
-    "eyBDb3JlLnVybCA9ICJodHRwczovL2FwaS50ZWxlZ3JhbS5vcmcvYm90VEdfVE9LRU4vc2VuZE1lc3NhZ2UiOwogIHByb3BzID0KICAoQ29yZS5SZXFPYmoKICAgICBbKCJib2R5IiwKICAgICAgIChDb3JlLlJlcVZhbHVlCiAgICAgICAgICAie1wiY2hhdF9pZFwiOlwiQ0hBVF9JRFwiLFwidGV4dFwiOlwidGl0bGVcXG5cXG5bIEltcG9ydGFudCBjaGFuZ2VzIHNpbmNlIDEuMC4wIF1cXG4tIFN1cHBvcnQgZm9yIEpldHBhY2sgTWFjcm9iZW5jaG1hcmtzLCB3aGljaCBhbGxvd3MgeW91IHRvIG1lYXN1cmUgd2hvbGUtYXBwIGludGVyYWN0aW9ucyBsaWtlIHN0YXJ0dXAgYW5kIHNjcm9sbGluZywgcHJvdmlkZXMgdGhlIGFiaWxpdHkgdG8gY2FwdHVyZSB0cmFjZXMgICYgbWVhc3VyZSB0cmFjZSBzZWN0aW9ucy5cXG4tIFN1cHBvcnQgZm9yIEJhc2VsaW5lIFByb2ZpbGVzICAgQ29tcGlsYXRpb25Nb2RlLlBhcnRpYWwgdG8gbWVhc3VyZSB0aGUgZWZmZWN0aXZlbmVzcyBvZiBCYXNlbGluZSBQcm9maWxlcy4gQEJhc2VsaW5lUHJvZmlsZVJ1bGUgdG8gYXV0b21hdGljYWxseSBnZW5lcmF0ZSBCYXNlbGluZSBwcm9maWxlcyBmb3IgYSBnaXZlbiBjcml0aWNhbCB1c2VyIGpvdXJuZXkuIFxcbi0gU3VwcG9ydCBmb3IgQWxsb2NhdGlvbiBtZXRyaWNzICYgcHJvZmlsaW5nIGR1cmluZyBNaWNyb2JlbmNobWFyayBydW5zLlwifSIpKTsKICAgICAgICgibWV0aG9kIiwgKENvcmUuUmVxVmFsdWUgInBvc3QiKSk7CiAgICAgICAoImhlYWRlcnMiLAogICAgICAgIChDb3JlLlJlcU9iaiBbKCJjb250ZW50LXR5cGUiLCAoQ29yZS5SZXFWYWx1ZSAiYXBwbGljYXRpb24vanNvbiIpKV0pKQogICAgICAgXSk7CiAgY2FsbGJhY2sgPSA8ZnVuPiB9"
+    "ewogICJ1cmwiOiAiaHR0cHM6Ly9hcGkudGVsZWdyYW0ub3JnL2JvdFRHX1RPS0VOL3NlbmRNZXNzYWdlIiwKICAicHJvcHMiOiB7CiAgICAiYm9keSI6ICJ7XCJjaGF0X2lkXCI6XCJDSEFUX0lEXCIsXCJ0ZXh0XCI6XCJcXG50aXRsZVxcblxcblsgSW1wb3J0YW50IGNoYW5nZXMgc2luY2UgMS4wLjAgXVxcbi0gU3VwcG9ydCBmb3IgSmV0cGFjayBNYWNyb2JlbmNobWFya3MsIHdoaWNoIGFsbG93cyB5b3UgdG8gbWVhc3VyZSB3aG9sZS1hcHAgaW50ZXJhY3Rpb25zIGxpa2Ugc3RhcnR1cCBhbmQgc2Nyb2xsaW5nLCBwcm92aWRlcyB0aGUgYWJpbGl0eSB0byBjYXB0dXJlIHRyYWNlcyAgJiBtZWFzdXJlIHRyYWNlIHNlY3Rpb25zLlxcbi0gU3VwcG9ydCBmb3IgQmFzZWxpbmUgUHJvZmlsZXMgICBDb21waWxhdGlvbk1vZGUuUGFydGlhbCB0byBtZWFzdXJlIHRoZSBlZmZlY3RpdmVuZXNzIG9mIEJhc2VsaW5lIFByb2ZpbGVzLiBAQmFzZWxpbmVQcm9maWxlUnVsZSB0byBhdXRvbWF0aWNhbGx5IGdlbmVyYXRlIEJhc2VsaW5lIHByb2ZpbGVzIGZvciBhIGdpdmVuIGNyaXRpY2FsIHVzZXIgam91cm5leS4gXFxuLSBTdXBwb3J0IGZvciBBbGxvY2F0aW9uIG1ldHJpY3MgJiBwcm9maWxpbmcgZHVyaW5nIE1pY3JvYmVuY2htYXJrIHJ1bnMuXCJ9IiwKICAgICJtZXRob2QiOiAicG9zdCIsCiAgICAiaGVhZGVycyI6IHsgImNvbnRlbnQtdHlwZSI6ICJhcHBsaWNhdGlvbi9qc29uIiB9CiAgfQp9"
     |> Base64.decode |> Result.get_ok
   in
-  if actual <> expected then (
-    prerr_endline (Base64.encode_string actual) ;
-    failwith "" )
+  assert_and_show_diff actual expected
 
 let () =
   let get_new_substring prefix html =

@@ -66,7 +66,7 @@ let _main_rss =
   |> Command.call "https://g.com/updates.xml"
   |> Command.map __main2
 
-let main () =
+let main () () =
   let log = ref [] in
   Command.attach_handler download_cmd (fun url ->
       log := url :: !log ;
