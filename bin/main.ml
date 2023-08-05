@@ -1,8 +1,10 @@
 open Js_of_ocaml
 module Unsafe = Js.Unsafe
+open Lib
 open Lib.Core
+open Lib.Utils
 
-(* let execute_request (cmd : cmd) =
+let execute_request (url : string) props =
   let rec mk_req = function
     | ReqObj props ->
         Unsafe.obj
@@ -10,7 +12,7 @@ open Lib.Core
     | ReqValue v ->
         Js.string v |> Unsafe.inject
   in
-  Unsafe.global##fetch (Unsafe.inject cmd.url) (mk_req cmd.props)
+  Unsafe.global##fetch (Unsafe.inject url) (mk_req props)
 
 let get_today () =
   {|(function() { let now = new Date(); return now.getFullYear() + "-" + (now.getMonth() + 1) + "-" + now.getDate() + "T00:00:00+00:00" })()|}
@@ -22,23 +24,27 @@ let make_env () : env =
   ; telegraph_token= Unsafe.global ##. TELEGRAPH_TOKEN_
   ; now= get_today () }
 
-let next f p = p##then_ f *)
+let next f p = p##then_ f
 
-(* let handle_scheduled event =
-  let env = make_env () in
-  let rec handle_scheduled_ props =
-    let download (prop : cmd) =
-      prop |> execute_request
-      |> next (fun response -> response##text)
-      |> next (fun text ->
-             prop.callback {body= text; env} |> handle_scheduled_ )
-    in
-    props |> List.map download |> Array.of_list
-    |> fun pall -> Js.Unsafe.global ##. Promise##all pall
+let handle_scheduled event =
+  let promise =
+    Unsafe.new_obj Unsafe.global ##. Promise
+      [| Unsafe.inject
+           (Js.wrap_callback (fun resolve _b ->
+                Core.on_scheduled (make_env ()) World (fun _ ->
+                    Unsafe.fun_call resolve [||] |> ignore ) ) ) |]
   in
-  handle_scheduled_ on_scheduled |> fun p -> event##waitUntil p
+  event##waitUntil promise
 
 let () =
+  Command.attach_async_handler Core.Commands.download
+    (fun (url, props) dispatch ->
+      (* print_endline @@ "[LOG] BEFORE execute_request, " ^ url ; *)
+      execute_request url props
+      |> next (fun response -> response##text)
+      |> next (fun text ->
+             print_endline @@ "[LOG] AFTER execute_request, " ^ url ;
+             dispatch {body= text; env= make_env ()} ) ) ;
   Js.Unsafe.global##addEventListener
     (Js.Unsafe.inject "scheduled")
-    (Js.wrap_callback handle_scheduled) *)
+    (Js.wrap_callback handle_scheduled)

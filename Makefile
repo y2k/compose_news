@@ -1,7 +1,7 @@
 .PHONY: release test build_wrangler wrangler schedule update_base
 
 release:
-	dune clean && dune test && dune build bin --profile=release
+	dune clean && dune build bin --profile=release
 
 test:
 	dune build && OCAMLRUNPARAM=b dune test
