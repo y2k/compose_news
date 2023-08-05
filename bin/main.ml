@@ -26,6 +26,8 @@ let make_env () : env =
 
 let next f p = p##then_ f
 
+let catch f p = p##catch f
+
 let handle_scheduled event =
   let promise =
     Unsafe.new_obj Unsafe.global ##. Promise
@@ -44,7 +46,7 @@ let () =
       |> next (fun response -> response##text)
       |> next (fun text ->
              print_endline @@ "[LOG] AFTER execute_request, " ^ url ;
-             dispatch {body= text; env= make_env ()} ) ) ;
+             dispatch @@ Ok {body= text; env= make_env ()} ) ) ;
   Js.Unsafe.global##addEventListener
     (Js.Unsafe.inject "scheduled")
     (Js.wrap_callback handle_scheduled)

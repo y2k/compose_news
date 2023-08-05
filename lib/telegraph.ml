@@ -24,7 +24,7 @@ let create_request access_token title content =
 let get_page_url _resp_text =
   Yojson.Safe.from_string _resp_text
   |> Util.path ["result"; "url"]
-  |> Option.get |> to_string
+  |> Option.get |> Util.to_string
 
 let make_item_sample items title : Yojson.Safe.t list =
   items

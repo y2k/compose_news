@@ -30,14 +30,6 @@ let sequence (io_list : 'msg io list) : 'msg list io =
         _disp results
   in
   rec_map io_list []
-(* fun w _disp ->
-   let results = ref [] in
-   io_list
-   |> List.iter (fun f ->
-          let _a = f w in
-          _a (fun _b ->
-              results := _b :: !results ;
-              if List.length !results = List.length io_list then _disp !results ) ) *)
 
 let ignore_io (io : 'a io) : unit io = fun w disp -> io w ignore ; disp ()
 

@@ -1,7 +1,8 @@
 open Utils
 
 module Commands = struct
-  let download : (string * req_props, msg) Command.cmd = Command.stub ()
+  let download : (string * req_props, (msg, string) result) Command.cmd =
+    Command.stub ()
 end
 
 module Telegram = struct
@@ -23,15 +24,25 @@ module Telegram = struct
     |> Command.map (fun _ -> Command.empty)
 end
 
-let on_page_created (msg : msg) =
-  Telegraph.get_page_url msg.body |> Telegram.make_telegram_request msg.env
+let on_page_created (msg : (msg, string) result) =
+  match msg with
+  | Ok msg ->
+      Telegraph.get_page_url msg.body |> Telegram.make_telegram_request msg.env
+  | Error _ ->
+      Command.empty
 
-let on_http_downloaded env (a : Rss_parser.content list) (b : msg list) =
+let on_http_downloaded env (a : Rss_parser.content list)
+    (b : (msg, string) result list) =
   List.combine a b
-  |> List.concat_map (fun ((rss : Rss_parser.content), msg) ->
-         msg.body
-         |> Html_parser.parse rss.version
-         |> Fun.flip Telegraph.make_item_sample rss.title )
+  |> List.concat_map
+       (fun ((rss : Rss_parser.content), (msg : (msg, string) result)) ->
+         match msg with
+         | Ok msg ->
+             msg.body
+             |> Html_parser.parse rss.version
+             |> Fun.flip Telegraph.make_item_sample rss.title
+         | Error _ ->
+             [] )
   |> Telegraph.add_meta
   |> Telegraph.create_request env.telegraph_token "Jetpack Compose updates"
   |> fun (url, props) ->
@@ -39,21 +50,26 @@ let on_http_downloaded env (a : Rss_parser.content list) (b : msg list) =
 
 let compose_re = Re.str "ompose" |> Re.compile
 
-let on_xml_downloaded msg =
-  Rss_parser.main msg.body
-  (* |> List.filter (fun (x : Rss_parser.item) ->
-         Date.parse_date x.date = msg.env.now ) *)
-  (* |> List.filteri (fun i _ -> i < 1) *)
-  |> List.filteri (fun i _ -> i = 1)
-  |> List.concat_map (fun (x : Rss_parser.item) -> x.links)
-  |> List.filter (fun (x : Rss_parser.content) -> Re.execp compose_re x.title)
-  |> List.map (fun (x : Rss_parser.content) ->
-         (x, Command.call (x.link, ReqObj []) Commands.download) )
-  |> List.filteri (fun i _ -> i < 4)
-  |> fun xs ->
-  let a = List.map fst xs in
-  List.map snd xs |> Command.sequence
-  |> Command.map (on_http_downloaded msg.env a)
+let on_xml_downloaded (msg : (msg, string) result) =
+  match msg with
+  | Ok msg ->
+      Rss_parser.main msg.body
+      (* |> List.filter (fun (x : Rss_parser.item) ->
+             Date.parse_date x.date = msg.env.now ) *)
+      (* |> List.filteri (fun i _ -> i < 1) *)
+      |> List.filteri (fun i _ -> i = 1)
+      |> List.concat_map (fun (x : Rss_parser.item) -> x.links)
+      |> List.filter (fun (x : Rss_parser.content) ->
+             Re.execp compose_re x.title )
+      |> List.map (fun (x : Rss_parser.content) ->
+             (x, Command.call (x.link, ReqObj []) Commands.download) )
+      |> List.filteri (fun i _ -> i < 4)
+      |> fun xs ->
+      let a = List.map fst xs in
+      List.map snd xs |> Command.sequence
+      |> Command.map (on_http_downloaded msg.env a)
+  | Error _ ->
+      Command.empty
 
 let on_scheduled _env =
   Commands.download
