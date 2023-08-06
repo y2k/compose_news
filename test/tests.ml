@@ -50,31 +50,31 @@ let assert_and_show_diff actual expected =
     failwith "" |> ignore )
 
 (* let get_actual (file_name : string) version : string =
-  let logs : _ list ref = ref [] in
-  Command.attach_async_handler Core.Commands.download (fun (url, props) _ ->
-      let rec serialize_props (p : req_props) =
-        match p with
-        | ReqValue x ->
-            `String x
-        | ReqObj xs ->
-            `Assoc (xs |> List.map (fun (k, v) -> (k, serialize_props v)))
-      in
-      let ji =
-        `Assoc [("url", `String url); ("props", serialize_props props)]
-        |> Yojson.Safe.pretty_to_string
-      in
-      logs := ji :: !logs ) ;
-  Core.on_http_downloaded
-    [{title= "title"; link= "link"; version}]
-    [ { env=
-          { tg_token= "TG_TOKEN"
-          ; chat_id= "CHAT_ID"
-          ; telegraph_token= "e43a8cbce190"
-          ; now= Date.create 2023 1 1 }
-      ; body= read_sample_file file_name } ]
-  |> fun f ->
-  f Command.World ignore ;
-  !logs |> List.fold_left ( ^ ) "" *)
+   let logs : _ list ref = ref [] in
+   Command.attach_async_handler Core.Commands.download (fun (url, props) _ ->
+       let rec serialize_props (p : req_props) =
+         match p with
+         | ReqValue x ->
+             `String x
+         | ReqObj xs ->
+             `Assoc (xs |> List.map (fun (k, v) -> (k, serialize_props v)))
+       in
+       let ji =
+         `Assoc [("url", `String url); ("props", serialize_props props)]
+         |> Yojson.Safe.pretty_to_string
+       in
+       logs := ji :: !logs ) ;
+   Core.on_http_downloaded
+     [{title= "title"; link= "link"; version}]
+     [ { env=
+           { tg_token= "TG_TOKEN"
+           ; chat_id= "CHAT_ID"
+           ; telegraph_token= "e43a8cbce190"
+           ; now= Date.create 2023 1 1 }
+       ; body= read_sample_file file_name } ]
+   |> fun f ->
+   f Command.World ignore ;
+   !logs |> List.fold_left ( ^ ) "" *)
 
 let get_actual_2 (file_name : string) day : string =
   let logs : _ list ref = ref [] in
@@ -92,12 +92,13 @@ let get_actual_2 (file_name : string) day : string =
       in
       logs := ji :: !logs ) ;
   Core.on_xml_downloaded
-    { env=
-        { tg_token= "TG_TOKEN"
-        ; chat_id= "CHAT_ID"
-        ; telegraph_token= "e43a8cbce190"
-        ; now= Date.create 2023 7 day }
-    ; body= read_sample_file file_name }
+    (Ok
+       { env=
+           { tg_token= "TG_TOKEN"
+           ; chat_id= "CHAT_ID"
+           ; telegraph_token= "e43a8cbce190"
+           ; now= Date.create 2023 7 day }
+       ; body= read_sample_file file_name } )
   |> fun f ->
   f Command.World ignore ;
   !logs |> List.fold_left ( ^ ) ""
@@ -113,20 +114,20 @@ let () =
   assert_date 27 ""
 
 (* let () =
-  let actual = get_actual "sample3.html" "1.5.0-rc01" in
-  let expected =
-    "ewogICJ1cmwiOiAiaHR0cHM6Ly9hcGkudGVsZWdyYW0ub3JnL2JvdFRHX1RPS0VOL3NlbmRNZXNzYWdlIiwKICAicHJvcHMiOiB7CiAgICAiYm9keSI6ICJ7XCJjaGF0X2lkXCI6XCJDSEFUX0lEXCIsXCJ0ZXh0XCI6XCJcXG50aXRsZVxcblxcblsg0JjRgdC/0YDQsNCy0LvQtdC90LjQtSDQvtGI0LjQsdC+0LogXVxcbi0gRml4ZWQgYW4gaXNzdWUgd2hlcmUgY2FsbGluZyAudmFsdWUgb24gYSBwcmltaXRpdmUgc3RhdGUgdHlwZSB3b3VsZCByZXBvcnQgYSBsaW50IHdhcm5pbmcgd2l0aCBhbiBpbnZhbGlkIGZpeC4gVGhlIGluc3BlY3Rpb24gd2lsbCBub3cgcmVjb21tZW5kIG1pZ3JhdGluZyB0byB0aGUgY29ycmVjdCBwcm9wZXJ0eS5cXG4tIEFuIG9wdGlvbmFsIGluc3BlY3Rpb24gdG8gcmVjb21tZW5kIG1pZ3JhdGluZyBtdXRhYmxlU3RhdGVPZigpIGNhbGxzIHRvIHRoZWlyIGNvcnJlc3BvbmRpbmcgc3BlY2lhbGl6ZWQgdHlwZXMgZm9yIHByaW1pdGl2ZXMgaXMgYXZhaWxhYmxlLiBJdHMgbGludCBJRCBpcyBBdXRvYm94aW5nU3RhdGVDcmVhdGlvbi4gUHJldmlvdXNseSwgdGhpcyBpbnNwZWN0aW9uIHdhcyBlbmFibGVkIGJ5IGRlZmF1bHQgZm9yIGFsbCBwcm9qZWN0cy4gVG8gc2VlIHRoaXMgd2FybmluZyBpbiBBbmRyb2lkIFN0dWRpbydzIGVkaXRvciBhbmQgeW91ciBwcm9qZWN0J3MgbGludCBvdXRwdXRzLCBjaGFuZ2UgaXRzIHNldmVyaXR5IGZyb20gaW5mb3JtYXRpb25hbCB0byB3YXJuaW5nIGJ5IGRlY2xhcmluZyB3YXJuaW5nIFxcXCJBdXRvYm94aW5nU3RhdGVDcmVhdGlvblxcXCIgaW5zaWRlIHlvdXIgbW9kdWxlJ3MgYnVpbGQuZ3JhZGxlIG9yIGJ1aWxkLmdyYWRsZS5rdHMgY29uZmlndXJhdGlvbiBhcyBzaG93bjogICAgIGFuZHJvaWQgeyAgICAgICAgIGxpbnQgeyAgICAgICAgICAgICB3YXJuaW5nIFxcXCJBdXRvYm94aW5nU3RhdGVDcmVhdGlvblxcXCIgICAgICAgICB9ICAgICAgICAgLi4uICAgICB9IFwifSIsCiAgICAibWV0aG9kIjogInBvc3QiLAogICAgImhlYWRlcnMiOiB7ICJjb250ZW50LXR5cGUiOiAiYXBwbGljYXRpb24vanNvbiIgfQogIH0KfQ=="
-    |> Base64.decode |> Result.get_ok
-  in
-  assert_and_show_diff actual expected
+     let actual = get_actual "sample3.html" "1.5.0-rc01" in
+     let expected =
+       "ewogICJ1cmwiOiAiaHR0cHM6Ly9hcGkudGVsZWdyYW0ub3JnL2JvdFRHX1RPS0VOL3NlbmRNZXNzYWdlIiwKICAicHJvcHMiOiB7CiAgICAiYm9keSI6ICJ7XCJjaGF0X2lkXCI6XCJDSEFUX0lEXCIsXCJ0ZXh0XCI6XCJcXG50aXRsZVxcblxcblsg0JjRgdC/0YDQsNCy0LvQtdC90LjQtSDQvtGI0LjQsdC+0LogXVxcbi0gRml4ZWQgYW4gaXNzdWUgd2hlcmUgY2FsbGluZyAudmFsdWUgb24gYSBwcmltaXRpdmUgc3RhdGUgdHlwZSB3b3VsZCByZXBvcnQgYSBsaW50IHdhcm5pbmcgd2l0aCBhbiBpbnZhbGlkIGZpeC4gVGhlIGluc3BlY3Rpb24gd2lsbCBub3cgcmVjb21tZW5kIG1pZ3JhdGluZyB0byB0aGUgY29ycmVjdCBwcm9wZXJ0eS5cXG4tIEFuIG9wdGlvbmFsIGluc3BlY3Rpb24gdG8gcmVjb21tZW5kIG1pZ3JhdGluZyBtdXRhYmxlU3RhdGVPZigpIGNhbGxzIHRvIHRoZWlyIGNvcnJlc3BvbmRpbmcgc3BlY2lhbGl6ZWQgdHlwZXMgZm9yIHByaW1pdGl2ZXMgaXMgYXZhaWxhYmxlLiBJdHMgbGludCBJRCBpcyBBdXRvYm94aW5nU3RhdGVDcmVhdGlvbi4gUHJldmlvdXNseSwgdGhpcyBpbnNwZWN0aW9uIHdhcyBlbmFibGVkIGJ5IGRlZmF1bHQgZm9yIGFsbCBwcm9qZWN0cy4gVG8gc2VlIHRoaXMgd2FybmluZyBpbiBBbmRyb2lkIFN0dWRpbydzIGVkaXRvciBhbmQgeW91ciBwcm9qZWN0J3MgbGludCBvdXRwdXRzLCBjaGFuZ2UgaXRzIHNldmVyaXR5IGZyb20gaW5mb3JtYXRpb25hbCB0byB3YXJuaW5nIGJ5IGRlY2xhcmluZyB3YXJuaW5nIFxcXCJBdXRvYm94aW5nU3RhdGVDcmVhdGlvblxcXCIgaW5zaWRlIHlvdXIgbW9kdWxlJ3MgYnVpbGQuZ3JhZGxlIG9yIGJ1aWxkLmdyYWRsZS5rdHMgY29uZmlndXJhdGlvbiBhcyBzaG93bjogICAgIGFuZHJvaWQgeyAgICAgICAgIGxpbnQgeyAgICAgICAgICAgICB3YXJuaW5nIFxcXCJBdXRvYm94aW5nU3RhdGVDcmVhdGlvblxcXCIgICAgICAgICB9ICAgICAgICAgLi4uICAgICB9IFwifSIsCiAgICAibWV0aG9kIjogInBvc3QiLAogICAgImhlYWRlcnMiOiB7ICJjb250ZW50LXR5cGUiOiAiYXBwbGljYXRpb24vanNvbiIgfQogIH0KfQ=="
+       |> Base64.decode |> Result.get_ok
+     in
+     assert_and_show_diff actual expected
 
-let () =
-  let actual = get_actual "sample2.html" "1.1.0" in
-  let expected =
-    "ewogICJ1cmwiOiAiaHR0cHM6Ly9hcGkudGVsZWdyYW0ub3JnL2JvdFRHX1RPS0VOL3NlbmRNZXNzYWdlIiwKICAicHJvcHMiOiB7CiAgICAiYm9keSI6ICJ7XCJjaGF0X2lkXCI6XCJDSEFUX0lEXCIsXCJ0ZXh0XCI6XCJcXG50aXRsZVxcblxcblsgSW1wb3J0YW50IGNoYW5nZXMgc2luY2UgMS4wLjAgXVxcbi0gU3VwcG9ydCBmb3IgSmV0cGFjayBNYWNyb2JlbmNobWFya3MsIHdoaWNoIGFsbG93cyB5b3UgdG8gbWVhc3VyZSB3aG9sZS1hcHAgaW50ZXJhY3Rpb25zIGxpa2Ugc3RhcnR1cCBhbmQgc2Nyb2xsaW5nLCBwcm92aWRlcyB0aGUgYWJpbGl0eSB0byBjYXB0dXJlIHRyYWNlcyAgJiBtZWFzdXJlIHRyYWNlIHNlY3Rpb25zLlxcbi0gU3VwcG9ydCBmb3IgQmFzZWxpbmUgUHJvZmlsZXMgICBDb21waWxhdGlvbk1vZGUuUGFydGlhbCB0byBtZWFzdXJlIHRoZSBlZmZlY3RpdmVuZXNzIG9mIEJhc2VsaW5lIFByb2ZpbGVzLiBAQmFzZWxpbmVQcm9maWxlUnVsZSB0byBhdXRvbWF0aWNhbGx5IGdlbmVyYXRlIEJhc2VsaW5lIHByb2ZpbGVzIGZvciBhIGdpdmVuIGNyaXRpY2FsIHVzZXIgam91cm5leS4gXFxuLSBTdXBwb3J0IGZvciBBbGxvY2F0aW9uIG1ldHJpY3MgJiBwcm9maWxpbmcgZHVyaW5nIE1pY3JvYmVuY2htYXJrIHJ1bnMuXCJ9IiwKICAgICJtZXRob2QiOiAicG9zdCIsCiAgICAiaGVhZGVycyI6IHsgImNvbnRlbnQtdHlwZSI6ICJhcHBsaWNhdGlvbi9qc29uIiB9CiAgfQp9"
-    |> Base64.decode |> Result.get_ok
-  in
-  assert_and_show_diff actual expected *)
+   let () =
+     let actual = get_actual "sample2.html" "1.1.0" in
+     let expected =
+       "ewogICJ1cmwiOiAiaHR0cHM6Ly9hcGkudGVsZWdyYW0ub3JnL2JvdFRHX1RPS0VOL3NlbmRNZXNzYWdlIiwKICAicHJvcHMiOiB7CiAgICAiYm9keSI6ICJ7XCJjaGF0X2lkXCI6XCJDSEFUX0lEXCIsXCJ0ZXh0XCI6XCJcXG50aXRsZVxcblxcblsgSW1wb3J0YW50IGNoYW5nZXMgc2luY2UgMS4wLjAgXVxcbi0gU3VwcG9ydCBmb3IgSmV0cGFjayBNYWNyb2JlbmNobWFya3MsIHdoaWNoIGFsbG93cyB5b3UgdG8gbWVhc3VyZSB3aG9sZS1hcHAgaW50ZXJhY3Rpb25zIGxpa2Ugc3RhcnR1cCBhbmQgc2Nyb2xsaW5nLCBwcm92aWRlcyB0aGUgYWJpbGl0eSB0byBjYXB0dXJlIHRyYWNlcyAgJiBtZWFzdXJlIHRyYWNlIHNlY3Rpb25zLlxcbi0gU3VwcG9ydCBmb3IgQmFzZWxpbmUgUHJvZmlsZXMgICBDb21waWxhdGlvbk1vZGUuUGFydGlhbCB0byBtZWFzdXJlIHRoZSBlZmZlY3RpdmVuZXNzIG9mIEJhc2VsaW5lIFByb2ZpbGVzLiBAQmFzZWxpbmVQcm9maWxlUnVsZSB0byBhdXRvbWF0aWNhbGx5IGdlbmVyYXRlIEJhc2VsaW5lIHByb2ZpbGVzIGZvciBhIGdpdmVuIGNyaXRpY2FsIHVzZXIgam91cm5leS4gXFxuLSBTdXBwb3J0IGZvciBBbGxvY2F0aW9uIG1ldHJpY3MgJiBwcm9maWxpbmcgZHVyaW5nIE1pY3JvYmVuY2htYXJrIHJ1bnMuXCJ9IiwKICAgICJtZXRob2QiOiAicG9zdCIsCiAgICAiaGVhZGVycyI6IHsgImNvbnRlbnQtdHlwZSI6ICJhcHBsaWNhdGlvbi9qc29uIiB9CiAgfQp9"
+       |> Base64.decode |> Result.get_ok
+     in
+     assert_and_show_diff actual expected *)
 
 let () =
   let get_new_substring prefix html =
