@@ -1,4 +1,4 @@
-type world = World
+type world = World | TestWorld
 
 type 'result async_result = ('result -> unit) -> unit
 
@@ -21,15 +21,19 @@ let map (f : 'msg -> unit io) (io : 'msg io) : unit io =
 
 let sequence (io_list : 'msg io list) : 'msg list io =
  fun w _disp ->
-  let rec rec_map (io_list : 'msg io list) (results : 'msg list) : unit =
-    match io_list with
-    | _x :: xs ->
-        let _a = _x w in
-        _a (fun _b -> rec_map xs (_b :: results))
-    | [] ->
-        _disp results
-  in
-  rec_map io_list []
+  match w with
+  | TestWorld ->
+      io_list |> List.iter (fun _b -> _b w ignore)
+  | World ->
+      let rec rec_map (io_list : 'msg io list) (results : 'msg list) : unit =
+        match io_list with
+        | _x :: xs ->
+            let _a = _x w in
+            _a (fun _b -> rec_map xs (_b :: results))
+        | [] ->
+            _disp results
+      in
+      rec_map io_list []
 
 let ignore_io (io : 'a io) : unit io = fun w disp -> io w ignore ; disp ()
 

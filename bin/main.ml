@@ -1,7 +1,6 @@
 open Js_of_ocaml
 module Unsafe = Js.Unsafe
 open Lib
-open Lib.Core
 open Lib.Utils
 
 let execute_request (url : string) props =

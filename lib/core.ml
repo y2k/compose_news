@@ -54,20 +54,21 @@ let on_xml_downloaded (msg : (msg, string) result) =
   match msg with
   | Ok msg ->
       Rss_parser.main msg.body
-      (* |> List.filter (fun (x : Rss_parser.item) ->
-             Date.parse_date x.date = msg.env.now ) *)
-      (* |> List.filteri (fun i _ -> i < 1) *)
-      |> List.filteri (fun i _ -> i = 1)
+      |> List.filter (fun (x : Rss_parser.item) ->
+             Date.parse_date x.date = msg.env.now )
+      |> List.filteri (fun i _ -> i < 1)
       |> List.concat_map (fun (x : Rss_parser.item) -> x.links)
       |> List.filter (fun (x : Rss_parser.content) ->
              Re.execp compose_re x.title )
+      |> List.filteri (fun i _ -> i < 10)
       |> List.map (fun (x : Rss_parser.content) ->
              (x, Command.call (x.link, ReqObj []) Commands.download) )
-      |> List.filteri (fun i _ -> i < 4)
       |> fun xs ->
-      let a = List.map fst xs in
-      List.map snd xs |> Command.sequence
-      |> Command.map (on_http_downloaded msg.env a)
+      if List.length xs = 0 then Command.empty
+      else
+        let a = List.map fst xs in
+        List.map snd xs |> Command.sequence
+        |> Command.map (on_http_downloaded msg.env a)
   | Error _ ->
       Command.empty
 
