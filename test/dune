@@ -2,6 +2,6 @@
  (flags
   (:standard -warn-error -A))
  (name tests)
- (libraries lib str re base64 ppx_deriving_yojson.runtime)
+ (libraries lib alcotest str re base64 ppx_deriving_yojson.runtime)
  (preprocess
   (pps ppx_deriving.show ppx_deriving_yojson)))

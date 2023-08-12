@@ -1,11 +1,23 @@
 module StringMap = struct
   include Map.Make (String)
 
-  let pp _ ppf m =
+  let pp ppf m =
     Format.fprintf ppf "{" ;
     iter (Format.fprintf ppf "\"%s\": \"%s\"; ") m ;
     Format.fprintf ppf "}"
 end
+
+module Debug = struct
+  let log msg show x =
+    print_endline @@ msg ^ " " ^ show x ;
+    x
+end
+
+let title_re = Re.Perl.compile_pat "<title>(.+?)</title>"
+
+let get_title html =
+  let res = Re.exec title_re html in
+  Re.Group.get res 1
 
 module Date : sig
   type t [@@deriving show]

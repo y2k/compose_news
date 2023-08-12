@@ -31,7 +31,7 @@ let sequence (io_list : 'msg io list) : 'msg list io =
             let _a = _x w in
             _a (fun _b -> rec_map xs (_b :: results))
         | [] ->
-            _disp results
+            _disp (List.rev results)
       in
       rec_map io_list []
 
