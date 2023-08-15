@@ -12,7 +12,7 @@ let stub () : ('arg, 'result) cmd =
 let call (arg : 'arg) (ef : ('arg, 'result) cmd) : 'result io =
  fun (_ : world) -> ef.action arg
 
-let map (f : 'msg -> unit io) (io : 'msg io) : unit io =
+let bind (f : 'msg -> unit io) (io : 'msg io) : unit io =
  fun w next ->
   let _a = io w in
   _a (fun _b ->

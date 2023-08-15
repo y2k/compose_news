@@ -21,7 +21,7 @@ module Telegram = struct
         ; ("headers", ReqObj [("content-type", ReqValue "application/json")]) ]
     in
     Command.call (url, props) Commands.download
-    |> Command.map (fun _ ->
+    |> Command.bind (fun _ ->
            print_endline @@ "[TELEGRAM] Message sended to server" ;
            (* Command.empty  *)
            fun _ d ->
@@ -59,7 +59,7 @@ let on_http_downloaded env (a : Rss_parser.content list)
   |> Telegraph.add_meta
   |> Telegraph.create_request env.telegraph_token "Jetpack Compose updates"
   |> fun (url, props) ->
-  Command.call (url, props) Commands.download |> Command.map on_page_created
+  Command.call (url, props) Commands.download |> Command.bind on_page_created
 
 let compose_re = Re.str "ompose" |> Re.compile
 
@@ -81,7 +81,7 @@ let on_xml_downloaded (msg : (msg, string) result) =
       else
         let a = List.map fst xs in
         List.map snd xs |> Command.sequence
-        |> Command.map (on_http_downloaded msg.env a)
+        |> Command.bind (on_http_downloaded msg.env a)
   | Error _ ->
       Command.empty
 
@@ -90,4 +90,4 @@ let on_scheduled _env =
   |> Command.call
        ( "https://developer.android.com/feeds/androidx-release-notes.xml"
        , ReqObj [] )
-  |> Command.map on_xml_downloaded
+  |> Command.bind on_xml_downloaded
