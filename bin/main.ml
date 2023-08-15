@@ -33,19 +33,16 @@ let handle_scheduled event =
       [| Unsafe.inject
            (Js.wrap_callback (fun resolve _b ->
                 Core.on_scheduled (make_env ()) World (fun _ ->
-                    Unsafe.fun_call resolve [||] |> ignore ) ) ) |]
+                    Unsafe.fun_call resolve [||] ) ) ) |]
   in
   event##waitUntil promise
 
 let () =
   Command.attach_async_handler Core.Commands.download
     (fun (url, props) dispatch ->
-      (* print_endline @@ "[LOG] BEFORE execute_request, " ^ url ; *)
       execute_request url props
       |> next (fun response -> response##text)
-      |> next (fun text ->
-             print_endline @@ "[LOG] AFTER execute_request, " ^ url ;
-             dispatch @@ Ok {body= text; env= make_env ()} ) ) ;
+      |> next (fun text -> dispatch @@ Ok {body= text; env= make_env ()}) ) ;
   Js.Unsafe.global##addEventListener
     (Js.Unsafe.inject "scheduled")
     (Js.wrap_callback handle_scheduled)

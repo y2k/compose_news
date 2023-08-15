@@ -13,14 +13,14 @@ let call (arg : 'arg) (ef : ('arg, 'result) cmd) : 'result io =
  fun (_ : world) -> ef.action arg
 
 let map (f : 'msg -> unit io) (io : 'msg io) : unit io =
- fun w _disp ->
+ fun w next ->
   let _a = io w in
   _a (fun _b ->
-      let _c = f _b in
-      _c w ignore )
+      let result_io = f _b in
+      result_io w next )
 
 let sequence (io_list : 'msg io list) : 'msg list io =
- fun w _disp ->
+ fun w next ->
   match w with
   | TestWorld ->
       io_list |> List.iter (fun _b -> _b w ignore)
@@ -31,7 +31,7 @@ let sequence (io_list : 'msg io list) : 'msg list io =
             let _a = _x w in
             _a (fun _b -> rec_map xs (_b :: results))
         | [] ->
-            _disp (List.rev results)
+            next (List.rev results)
       in
       rec_map io_list []
 

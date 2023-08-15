@@ -3,12 +3,6 @@ open Lib.Utils
 open Alcotest
 module Date = Utils.Date
 
-let _ = Test_effects.main ()
-
-(* Date time *)
-
-(*  *)
-
 let read_sample_file filename =
   let ch = open_in_bin ("../../../test/samples/" ^ filename) in
   Fun.protect

@@ -21,7 +21,12 @@ module Telegram = struct
         ; ("headers", ReqObj [("content-type", ReqValue "application/json")]) ]
     in
     Command.call (url, props) Commands.download
-    |> Command.map (fun _ -> Command.empty)
+    |> Command.map (fun _ ->
+           print_endline @@ "[TELEGRAM] Message sended to server" ;
+           (* Command.empty  *)
+           fun _ d ->
+             print_endline @@ "[TELEGRAM] END" ;
+             d () )
 end
 
 let on_page_created (msg : (msg, string) result) =
@@ -38,17 +43,17 @@ let on_http_downloaded env (a : Rss_parser.content list)
        (fun ((rss : Rss_parser.content), (msg : (msg, string) result)) ->
          match msg with
          | Ok msg -> (
-             print_endline @@ "[URL]: " ^ rss.link ;
-             try
-               msg.body
-               |> Html_parser.parse rss.version
-               |> Fun.flip Telegraph.make_item_sample rss.title
-             with e ->
-               (* let l = String.length msg.body in
-                  let html_end = String.sub msg.body (l - 30) 30 in *)
-               let title = Utils.get_title msg.body in
-               print_endline @@ "[ERROR]: " ^ rss.link ^ "|" ^ title ;
-               raise e )
+           (* print_endline @@ "[URL]: " ^ rss.link ; *)
+           try
+             msg.body
+             |> Html_parser.parse rss.version
+             |> Fun.flip Telegraph.make_item_sample rss.title
+           with e ->
+             (* let l = String.length msg.body in
+                let html_end = String.sub msg.body (l - 30) 30 in *)
+             let title = Utils.get_title msg.body in
+             print_endline @@ "[ERROR]: " ^ rss.link ^ "|" ^ title ;
+             raise e )
          | Error _ ->
              [] )
   |> Telegraph.add_meta
@@ -65,7 +70,6 @@ let on_xml_downloaded (msg : (msg, string) result) =
       |> List.filter (fun (x : Rss_parser.item) ->
              Date.parse_date x.date = msg.env.now )
       |> List.filteri (fun i _ -> i < 1)
-      (* |> List.filteri (fun i _ -> i = 2) *)
       |> List.concat_map (fun (x : Rss_parser.item) -> x.links)
       |> List.filter (fun (x : Rss_parser.content) ->
              Re.execp compose_re x.title )
