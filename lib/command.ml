@@ -19,6 +19,13 @@ let bind (f : 'msg -> unit io) (io : 'msg io) : unit io =
       let result_io = f _b in
       result_io w next )
 
+let map (f : 'i -> 'o) (io : 'i io) : 'o io =
+ fun w next ->
+  let next1 = io w in
+  next1 (fun _b ->
+      let result = f _b in
+      next result )
+
 let sequence (io_list : 'msg io list) : 'msg list io =
  fun w next ->
   match w with
@@ -40,6 +47,8 @@ let ignore_io (io : 'a io) : unit io = fun w disp -> io w ignore ; disp ()
 let batch (fs : unit io list) : unit io = sequence fs |> ignore_io
 
 let empty : unit io = fun _ d -> d ()
+
+let pure x : _ io = fun _ d -> d x
 
 let attach_handler (eh : ('i, 'o) cmd) (h : 'i -> 'o) =
   eh.action <- (fun i d -> d (h i))
