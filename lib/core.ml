@@ -67,12 +67,15 @@ let on_xml_downloaded (msg : (msg, string) result) =
   match msg with
   | Ok msg ->
       Rss_parser.main msg.body
+      (* FIXME *)
       |> List.filter (fun (x : Rss_parser.item) ->
              Date.parse_date x.date = msg.env.now )
       |> List.filteri (fun i _ -> i < 1)
       |> List.concat_map (fun (x : Rss_parser.item) -> x.links)
       |> List.filter (fun (x : Rss_parser.content) ->
              Re.execp compose_re x.title )
+      (* FIXME *)
+      (* |> List.filteri (fun i _ -> i < 2)  *)
       |> List.filteri (fun i _ -> i < 10)
       |> List.map (fun (x : Rss_parser.content) ->
              (x, Command.call (x.link, ReqObj []) Commands.download) )

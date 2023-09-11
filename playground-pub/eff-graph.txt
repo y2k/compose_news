@@ -1,0 +1,58 @@
+
+
+
+event_scheduled :: unit Hook.t
+event_xml_downloaded :: http_resp Hook.t
+
+handle_scheduled :: unit -> http_req
+download_effect_handler :: http_req -> http_resp io
+
+handle_scheduled' :: unit -> http_resp io
+
+
+
+
+
+Map (
+    handle_scheduled,
+    LogError(
+        List [
+            Map (
+                handle_xml_downloaded,
+                Map (
+                    handle_http_downloaded,
+                    Map (
+                        handle_page_created,
+                        LogError (End)
+                    )
+                )
+            );
+            Sample (
+                handle_xml_downloaded_2,
+                End
+            );
+        ]
+    )
+)
+
+
+
+
+
+
+Sample (
+    event_scheduled,
+    handle_scheduled,
+    ???                     download_effect_handler,
+    event_xml_downloaded
+)
+
+Sample (
+    event_xml_downloaded,
+    handle_xml_downloaded,
+    ???,
+    event_http_downloaded
+)
+
+type Register = Register of 'a Hook.t * ('a -> 'b) * 'b Hoot.t === unit -> unit io
+

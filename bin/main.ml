@@ -3,6 +3,12 @@ module Unsafe = Js.Unsafe
 open Lib
 open Lib.Utils
 
+module Utils = struct
+  let delay seconds =
+    Promise.make (fun ~resolve ~reject:_ ->
+        Js_of_ocaml.Dom_html.setTimeout resolve (seconds *. 1000.0) |> ignore )
+end
+
 let execute_request (url : string) props =
   let rec mk_req = function
     | ReqObj props ->
@@ -23,26 +29,18 @@ let make_env () : env =
   ; telegraph_token= Unsafe.global ##. TELEGRAPH_TOKEN_
   ; now= get_today () }
 
-let next f p = p##then_ f
-
-let catch f p = p##catch f
-
-let handle_scheduled event =
-  let promise =
-    Unsafe.new_obj Unsafe.global ##. Promise
-      [| Unsafe.inject
-           (Js.wrap_callback (fun resolve _b ->
-                Core.on_scheduled (make_env ()) World (fun _ ->
-                    Unsafe.fun_call resolve [||] ) ) ) |]
-  in
-  event##waitUntil promise
+let handle_scheduled _ =
+  Promise.make (fun ~resolve ~reject:_ ->
+      Core.on_scheduled (make_env ()) World (fun _ -> resolve [||]) )
 
 let () =
   Command.attach_async_handler Core.Commands.download
     (fun (url, props) dispatch ->
       execute_request url props
-      |> next (fun response -> response##text)
-      |> next (fun text -> dispatch @@ Ok {body= text; env= make_env ()}) ) ;
+      |> Promise.then_ ~fulfilled:(fun response -> response##text)
+      |> Promise.then_ ~fulfilled:(fun text ->
+             Ok {body= text; env= make_env ()} |> dispatch |> Promise.return )
+      |> ignore ) ;
   Js.Unsafe.global##addEventListener
     (Js.Unsafe.inject "scheduled")
-    (Js.wrap_callback handle_scheduled)
+    (Js.wrap_callback (fun e -> e##waitUntil (handle_scheduled e)))
