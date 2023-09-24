@@ -1,7 +1,8 @@
 open Lib
-open Lib.Utils
+open Utils
 open Alcotest
-module Date = Utils.Date
+module Date = Utils.Common.Date
+open Utils.Common
 
 let read_sample_file filename =
   let ch = open_in_bin ("../../../test/samples/" ^ filename) in

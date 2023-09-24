@@ -1,0 +1,5 @@
+(library
+ (name utils)
+ (libraries xml-light js_of_ocaml str angstrom re yojson)
+ (preprocess
+  (pps ppx_deriving.show js_of_ocaml-ppx)))

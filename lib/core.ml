@@ -1,4 +1,5 @@
 open Utils
+open Utils.Common
 
 module Commands = struct
   let download : (string * req_props, (msg, string) result) Command.cmd =
@@ -6,7 +7,7 @@ module Commands = struct
 end
 
 module Telegram = struct
-  let make_telegram_request (env : env) (new_message : string) =
+  let make_request env new_message =
     let url =
       Printf.sprintf "https://api.telegram.org/bot%s/sendMessage" env.tg_token
     in
@@ -20,6 +21,10 @@ module Telegram = struct
         ; ("method", ReqValue "post")
         ; ("headers", ReqObj [("content-type", ReqValue "application/json")]) ]
     in
+    (url, props)
+
+  let make_telegram_request (env : env) (new_message : string) =
+    let url, props = make_request env new_message in
     Command.call (url, props) Commands.download
     |> Command.bind (fun _ ->
            print_endline @@ "[TELEGRAM] Message sended to server" ;
@@ -29,12 +34,11 @@ module Telegram = struct
              d () )
 end
 
+let on_page_created_ msg =
+  Telegraph.get_page_url msg.body |> Telegram.make_telegram_request msg.env
+
 let on_page_created (msg : (msg, string) result) =
-  match msg with
-  | Ok msg ->
-      Telegraph.get_page_url msg.body |> Telegram.make_telegram_request msg.env
-  | Error _ ->
-      Command.empty
+  match msg with Ok msg -> on_page_created_ msg | Error _ -> Command.empty
 
 let on_http_downloaded env (a : Rss_parser.content list)
     (b : (msg, string) result list) =
@@ -51,7 +55,7 @@ let on_http_downloaded env (a : Rss_parser.content list)
            with e ->
              (* let l = String.length msg.body in
                 let html_end = String.sub msg.body (l - 30) 30 in *)
-             let title = Utils.get_title msg.body in
+             let title = Common.get_title msg.body in
              print_endline @@ "[ERROR]: " ^ rss.link ^ "|" ^ title ;
              raise e )
          | Error _ ->
@@ -63,32 +67,32 @@ let on_http_downloaded env (a : Rss_parser.content list)
 
 let compose_re = Re.str "ompose" |> Re.compile
 
-let on_xml_downloaded (msg : (msg, string) result) =
-  match msg with
-  | Ok msg ->
-      Rss_parser.main msg.body
-      (* FIXME *)
-      |> List.filter (fun (x : Rss_parser.item) ->
-             Date.parse_date x.date = msg.env.now )
-      |> List.filteri (fun i _ -> i < 1)
-      |> List.concat_map (fun (x : Rss_parser.item) -> x.links)
-      |> List.filter (fun (x : Rss_parser.content) ->
-             Re.execp compose_re x.title )
-      (* FIXME *)
-      (* |> List.filteri (fun i _ -> i < 2)  *)
-      |> List.filteri (fun i _ -> i < 10)
-      |> List.map (fun (x : Rss_parser.content) ->
-             (x, Command.call (x.link, ReqObj []) Commands.download) )
-      |> fun xs ->
-      if List.length xs = 0 then Command.empty
-      else
-        let a = List.map fst xs in
-        List.map snd xs |> Command.sequence
-        |> Command.bind (on_http_downloaded msg.env a)
-  | Error _ ->
-      Command.empty
+let on_xml_downloaded_ msg =
+  Rss_parser.main msg.body
+  (* FIXME *)
+  |> List.filter (fun (x : Rss_parser.item) ->
+         Date.parse_date x.date = msg.env.now )
+  |> List.filteri (fun i _ -> i < 1)
+  |> List.concat_map (fun (x : Rss_parser.item) -> x.links)
+  |> List.filter (fun (x : Rss_parser.content) -> Re.execp compose_re x.title)
+  (* FIXME *)
+  (* |> List.filteri (fun i _ -> i < 2) *)
+  |> List.filteri (fun i _ -> i < 10)
+  |> List.map (fun (x : Rss_parser.content) ->
+         (x, Command.call (x.link, ReqObj []) Commands.download) )
+  |> fun xs ->
+  if List.length xs = 0 then Command.empty
+  else
+    let a = List.map fst xs in
+    List.map snd xs |> Command.sequence
+    |> Command.bind (on_http_downloaded msg.env a)
 
-let on_scheduled _env =
+(*  *)
+
+let on_xml_downloaded (msg : (msg, string) result) =
+  match msg with Ok msg -> on_xml_downloaded_ msg | Error _ -> Command.empty
+
+let on_scheduled =
   Commands.download
   |> Command.call
        ( "https://developer.android.com/feeds/androidx-release-notes.xml"
