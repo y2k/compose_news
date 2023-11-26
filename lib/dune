@@ -1,5 +1,5 @@
 (library
- (name lib)
- (libraries utils xml-light js_of_ocaml str angstrom re yojson)
+ (name compose_news)
+ (libraries xml-light re ppx_deriving_yojson.runtime angstrom)
  (preprocess
-  (pps ppx_deriving.show js_of_ocaml-ppx)))
+  (pps ppx_deriving.show ppx_deriving_yojson js_of_ocaml-ppx)))

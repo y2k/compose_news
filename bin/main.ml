@@ -1,51 +1,49 @@
+open Cloudflare_worker
 open Js_of_ocaml
-module Unsafe = Js.Unsafe
-open Lib
-open Utils.Common
 
-module Utils = struct
-  (* let delay seconds =
-    Promise.make (fun ~resolve ~reject:_ ->
-        Js_of_ocaml.Dom_html.setTimeout resolve (seconds *. 1000.0) |> ignore ) *)
-
-  let get_today () =
-    {|(function() { let now = new Date(); return now.getFullYear() + "-" + (now.getMonth() + 1) + "-" + now.getDate() + "T00:00:00+00:00" })()|}
-    |> Js.Unsafe.js_expr |> Js.to_string |> Utils.Common.Date.parse_date
-end
-
-let execute_request (url : string) props =
-  let rec mk_req = function
-    | ReqObj props ->
-        Unsafe.obj
-          (Array.of_list (List.map (fun (k, p) -> (k, mk_req p)) props))
-    | ReqValue v ->
-        Js.string v |> Unsafe.inject
-  in
-  Unsafe.global##fetch (Unsafe.inject url) (mk_req props)
-
-let make_env () : env =
-  { tg_token= Unsafe.global ##. TG_TOKEN_
-  ; chat_id= Unsafe.global ##. CHAT_ID_
-  ; telegraph_token= Unsafe.global ##. TELEGRAPH_TOKEN_
-  ; now= Utils.get_today () }
+let get_now_iso_string () = (new%js Js.date_now)##toISOString |> Js.to_string
 
 let handle_scheduled () =
-  Promise.make (fun ~resolve ~reject:_ ->
-      Core.on_scheduled World (fun _ -> resolve [||]) )
+  let tg_token = Js.Unsafe.global ##. TG_TOKEN_ in
+  let chat_id = Js.Unsafe.global ##. CHAT_ID_ in
+  let telegraph_token : string = Js.Unsafe.global ##. TELEGRAPH_TOKEN_ in
+  let open Promise.Syntax in
+  let* xml =
+    Fetch.fetch "https://developer.android.com/feeds/androidx-release-notes.xml"
+      []
+    >>= Response.text
+  in
+  let html_requests =
+    Compose_news.make_html_requests (get_now_iso_string ()) xml
+  in
+  let* htmls =
+    html_requests
+    |> List.map (fun (x : Compose_news.rss_result) ->
+           let+ html = Fetch.fetch x.link [] >>= Response.text in
+           html )
+    |> Promise.all_list
+  in
+  if List.length htmls = 0 then (
+    print_endline @@ "LOG: No RSS updates for " ^ get_now_iso_string () ;
+    Promise.return () )
+  else
+    let body =
+      Compose_news.make_telegraph_post html_requests telegraph_token htmls
+    in
+    let* response_json =
+      Fetch.fetch "https://api.telegra.ph/createPage"
+        [ `Body body
+        ; `Method "post"
+        ; `Headers [("content-type", "application/json")] ]
+      >>= Response.text
+    in
+    let* _ =
+      Fetch.fetch
+        (Compose_news.make_telegram_url tg_token)
+        [ `Body (Compose_news.make_telegram_body response_json chat_id)
+        ; `Method "post"
+        ; `Headers [("content-type", "application/json")] ]
+    in
+    Promise.return ()
 
-let () =
-  Command.attach_async_handler Core.Commands.download
-    (fun (url, props) dispatch ->
-      execute_request url props
-      |> Promise.then_ ~fulfilled:(fun response -> response##text)
-      |> Promise.then_ ~fulfilled:(fun text ->
-             Ok {body= text; env= make_env ()} |> dispatch |> Promise.return )
-      |> ignore ) ;
-  Dom.addEventListener Js.Unsafe.global
-    (Dom.Event.make "scheduled")
-    (Dom.handler (fun e -> e##waitUntil (handle_scheduled ())))
-    Js._false
-  |> ignore
-(* Js.Unsafe.global##addEventListener
-   (Js.Unsafe.inject "scheduled")
-   (Js.wrap_callback (fun e -> e##waitUntil (handle_scheduled ()))) *)
+let () = CloudflareWorker.scheduled handle_scheduled

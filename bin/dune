@@ -3,6 +3,6 @@
   (:standard -warn-error -A))
  (name main)
  (modes js)
- (libraries lib js_of_ocaml yojson promise_jsoo)
+ (libraries compose_news js_of_ocaml yojson promise_jsoo re)
  (preprocess
   (pps ppx_deriving.show js_of_ocaml-ppx)))

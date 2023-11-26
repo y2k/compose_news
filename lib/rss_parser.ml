@@ -1,6 +1,7 @@
-type content = {title: string; link: string; version: string} [@@deriving show]
+type content = {title: string; link: string; version: string}
+[@@deriving show] [@@deriving yojson]
 
-type item = {date: string; links: content list} [@@deriving show]
+type entry = {updated: string; links: content list} [@@deriving show]
 
 let get_links xml =
   xml |> Xml.parse_string |> Xml.children
@@ -22,9 +23,9 @@ let main xml_string =
               (fun a x ->
                 match (Xml.tag x, Xml.children x) with
                 | "updated", [ch] ->
-                    {a with date= Xml.pcdata ch}
+                    {a with updated= Xml.pcdata ch}
                 | "content", [ch] ->
                     {a with links= get_links (Xml.pcdata ch)}
                 | _ ->
                     a )
-              {date= ""; links= []} )
+              {updated= ""; links= []} )

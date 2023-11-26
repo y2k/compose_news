@@ -73,6 +73,8 @@ let pend_tag = string "</" *> take_while1 is_lex <* char '>' >>| ignore
 
 type item = {title: string; content: string list} [@@deriving show]
 
+type document = {nodes: item list} [@@deriving show]
+
 module Items = struct
   let rec dom_items_to_string (xs : dom list) =
     List.fold_left
@@ -124,7 +126,7 @@ let parse prefix html =
   let html = html |> get_new_substring prefix in
   match parse_partial presult html with
   | Ok (Element (_, _, xs)) ->
-      Items.dom_to_items xs
+      {nodes= Items.dom_to_items xs}
   | Ok x ->
       failwith @@ "Wrong DOM: " ^ show_dom x
   | Error msg ->

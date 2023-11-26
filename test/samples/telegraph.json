@@ -1,0 +1,561 @@
+{
+  "access_token": "34954e59d0af",
+  "title": "Обновления библиотек «Compose»",
+  "author_name": "Compose News",
+  "author_url": "https://github.com/y2k/compose_news",
+  "content": [
+    { "tag": "h3", "children": [ "Оглавление" ] },
+    {
+      "tag": "ul",
+      "children": [
+        {
+          "tag": "li",
+          "children": [
+            {
+              "tag": "a",
+              "attrs": { "href": "#Compose-Animation-Version-1.6.0-beta01" },
+              "children": [ "Compose Animation Version 1.6.0-beta01" ]
+            }
+          ]
+        },
+        {
+          "tag": "li",
+          "children": [
+            {
+              "tag": "a",
+              "attrs": { "href": "#Compose-Foundation-Version-1.6.0-beta01" },
+              "children": [ "Compose Foundation Version 1.6.0-beta01" ]
+            }
+          ]
+        },
+        {
+          "tag": "li",
+          "children": [
+            {
+              "tag": "a",
+              "attrs": { "href": "#Compose-Material-Version-1.6.0-beta01" },
+              "children": [ "Compose Material Version 1.6.0-beta01" ]
+            }
+          ]
+        },
+        {
+          "tag": "li",
+          "children": [
+            {
+              "tag": "a",
+              "attrs": { "href": "#Compose-Runtime-Version-1.6.0-beta01" },
+              "children": [ "Compose Runtime Version 1.6.0-beta01" ]
+            }
+          ]
+        },
+        {
+          "tag": "li",
+          "children": [
+            {
+              "tag": "a",
+              "attrs": { "href": "#Compose-UI-Version-1.6.0-beta01" },
+              "children": [ "Compose UI Version 1.6.0-beta01" ]
+            }
+          ]
+        },
+        {
+          "tag": "li",
+          "children": [
+            {
+              "tag": "a",
+              "attrs": { "href": "#Wear-Compose-Version-1.3.0-beta01" },
+              "children": [ "Wear Compose Version 1.3.0-beta01" ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tag": "a",
+      "attrs": {
+        "href": "https://developer.android.com/jetpack/androidx/releases/compose-animation#1.6.0-beta01"
+      },
+      "children": [
+        {
+          "tag": "h3",
+          "children": [ "Compose Animation Version 1.6.0-beta01" ]
+        }
+      ]
+    },
+    { "tag": "h4", "children": [ "Изменения API" ] },
+    {
+      "tag": "ul",
+      "children": [
+        {
+          "tag": "li",
+          "children": [
+            "ExitTransition.Hold has been renamed to ExitTransition.KeepUntilTransitionsFinished to be more explicit."
+          ]
+        },
+        {
+          "tag": "li",
+          "children": [
+            "You may now use keyframesWithSpline to interpolate any N-dimensional value using monotonic splines. It's particularly useful to interpolate positional values such as Offset, IntOffset, DpOffset. Added as Experimental API."
+          ]
+        }
+      ]
+    },
+    { "tag": "hr" },
+    { "tag": "h4", "children": [ "Исправление ошибок" ] },
+    {
+      "tag": "ul",
+      "children": [
+        {
+          "tag": "li",
+          "children": [
+            "Add renderer support for Sweep Gradient in ArcLine."
+          ]
+        },
+        {
+          "tag": "li",
+          "children": [ "Implement equals and hashcode for PageSize.Fixed." ]
+        },
+        {
+          "tag": "li",
+          "children": [
+            "Fix binary compatibility issue with Window Inset change."
+          ]
+        },
+        {
+          "tag": "li",
+          "children": [
+            "Remove material core layer for Material3 Chip/Button as the microbenchmarks show better performance without it."
+          ]
+        }
+      ]
+    },
+    { "tag": "hr" },
+    {
+      "tag": "a",
+      "attrs": {
+        "href": "https://developer.android.com/jetpack/androidx/releases/compose-foundation#1.6.0-beta01"
+      },
+      "children": [
+        {
+          "tag": "h3",
+          "children": [ "Compose Foundation Version 1.6.0-beta01" ]
+        }
+      ]
+    },
+    { "tag": "h4", "children": [ "Изменения API" ] },
+    {
+      "tag": "ul",
+      "children": [
+        {
+          "tag": "li",
+          "children": [
+            "The DragAndDropTarget modifier now takes in the receiving DragAndDropTarget explicitly and has a lambda to opt into a drag and drop session. There are now two factory functions for a DragAndDropModifierNode. One for receiving transfers and one for transferring data"
+          ]
+        },
+        {
+          "tag": "li",
+          "children": [
+            "Updated maximumFlingVelocity to be represented as Float. Updated documentation to be more clear about the maximumFlingVelocity unity."
+          ]
+        },
+        {
+          "tag": "li",
+          "children": [
+            "onDragAndDropStart in the DragAndDropModifierNode factory has been renamed to acceptDragAndDropTransfer.  acceptsDragAndDropTransfer has been added to the dragAndDropTarget Modifier to accept from a drag and drop session.  This lambda returns a viable DragAndDropTarget if interested in a drag and drop session. Other lambdas for processing drag events have been replaced by this.  a DragAndDropTarget factory function has been added to receive from drag and drop sessions"
+          ]
+        },
+        {
+          "tag": "li",
+          "children": [
+            "Exposing startDragImmediately in AnchoredDraggable gives control for detecting dragging gestures when using it. It is useful to set it when the widget is animating to a target anchor. See Sample."
+          ]
+        },
+        {
+          "tag": "li",
+          "children": [
+            "Foundation Tooltip APIs are now @ExperimentalFoundationApi"
+          ]
+        },
+        {
+          "tag": "li",
+          "children": [
+            "Removed DragAndDropInfo as a type DragAndDropModifierNode.drag now takes parameters for the transferData, decoration size and drag decoration DrawScope lambda  DragAndDropTarget has methods for particular drag and drop events instead of being a single abstract method  onDragAndDropEvent in the factory function for a DragAndDropModifierNode has been renamed to onDragAndDropStart to better communicate that the DragAndDropTarget provided is valid for a given drag and drop session only  The DragAndDropEventType has been removed"
+          ]
+        },
+        {
+          "tag": "li",
+          "children": [
+            "Renamed PlatformTextInputModifierNode.runTextInputSession to establishTextInputSession."
+          ]
+        },
+        {
+          "tag": "li",
+          "children": [ "Replace OriginalText by TextSubstitution." ]
+        },
+        {
+          "tag": "li",
+          "children": [
+            "Renamed PlatformTextInputModifierNode.textInputSession to runTextInputSession."
+          ]
+        },
+        {
+          "tag": "li",
+          "children": [
+            "The children of SubcomposeLayout which are retained to be reused in future are considered deactivated. New assertIsDeactivated() test API was introduced to test such nodes. The rest of the test apis will filter out deactivated nodes by default."
+          ]
+        },
+        {
+          "tag": "li",
+          "children": [
+            "clippingEnabled parameter of Modifier.magnifier is renamed to clip."
+          ]
+        },
+        {
+          "tag": "li",
+          "children": [
+            "magnifierCenter parameter of Modifier.magnifier is made nullable preserving the same default behavior."
+          ]
+        },
+        {
+          "tag": "li",
+          "children": [
+            "Material SwipeToReveal APIs now rely on a slot based API instead of data class based instances to create those slots. This is a breaking change, please see the demo and sample code for examples on how to use the new API."
+          ]
+        }
+      ]
+    },
+    { "tag": "hr" },
+    { "tag": "h4", "children": [ "Исправление ошибок" ] },
+    {
+      "tag": "ul",
+      "children": [
+        {
+          "tag": "li",
+          "children": [ "Implement equals and hashcode for PageSize.Fixed." ]
+        },
+        {
+          "tag": "li",
+          "children": [
+            "Fixed a bug that would cause BasicText layout to not shrink when minWidth changed and minWidth less than initial measure constraints maxWidth"
+          ]
+        },
+        {
+          "tag": "li",
+          "children": [
+            "Add renderer support for Sweep Gradient in ArcLine."
+          ]
+        },
+        {
+          "tag": "li",
+          "children": [
+            "Fix binary compatibility issue with Window Inset change"
+          ]
+        },
+        {
+          "tag": "li",
+          "children": [
+            "Remove material core layer for Material3 Chip/Button as the microbenchmarks show better performance without it."
+          ]
+        }
+      ]
+    },
+    { "tag": "hr" },
+    {
+      "tag": "a",
+      "attrs": {
+        "href": "https://developer.android.com/jetpack/androidx/releases/compose-material#1.6.0-beta01"
+      },
+      "children": [
+        {
+          "tag": "h3",
+          "children": [ "Compose Material Version 1.6.0-beta01" ]
+        }
+      ]
+    },
+    {
+      "tag": "a",
+      "attrs": {
+        "href": "https://developer.android.com/jetpack/androidx/releases/compose-runtime#1.6.0-beta01"
+      },
+      "children": [
+        {
+          "tag": "h3",
+          "children": [ "Compose Runtime Version 1.6.0-beta01" ]
+        }
+      ]
+    },
+    { "tag": "h4", "children": [ "Изменения API" ] },
+    {
+      "tag": "ul",
+      "children": [
+        {
+          "tag": "li",
+          "children": [ "Propagate Certain stability values in annotation." ]
+        }
+      ]
+    },
+    { "tag": "hr" },
+    { "tag": "h4", "children": [ "Исправление ошибок" ] },
+    {
+      "tag": "ul",
+      "children": [
+        {
+          "tag": "li",
+          "children": [
+            "Use referential policy for composition local scope state in context."
+          ]
+        },
+        {
+          "tag": "li",
+          "children": [ "Restrict $dirty capture to inline lambdas." ]
+        },
+        {
+          "tag": "li",
+          "children": [
+            "Fix moveable content sometimes receiving the wrong composition locals."
+          ]
+        },
+        {
+          "tag": "li",
+          "children": [
+            "Use faster non-allocating hashmaps in RecomposeScopeImpl."
+          ]
+        },
+        { "tag": "li", "children": [ "Use ObjectIntMap in DerivedState." ] },
+        {
+          "tag": "li",
+          "children": [
+            "Use IntRef for int SnapshotThreadLocal in DerivedState."
+          ]
+        }
+      ]
+    },
+    { "tag": "hr" },
+    {
+      "tag": "a",
+      "attrs": {
+        "href": "https://developer.android.com/jetpack/androidx/releases/compose-ui#1.6.0-beta01"
+      },
+      "children": [
+        { "tag": "h3", "children": [ "Compose UI Version 1.6.0-beta01" ] }
+      ]
+    },
+    { "tag": "h4", "children": [ "Изменения API" ] },
+    {
+      "tag": "ul",
+      "children": [
+        {
+          "tag": "li",
+          "children": [
+            "The DragAndDropTarget modifier now takes in the receiving DragAndDropTarget explicitly and has a lambda to opt into a drag and drop session. There are now two factory functions for a DragAndDropModifierNode. One for receiving transfers and one for transferring data"
+          ]
+        },
+        {
+          "tag": "li",
+          "children": [
+            "Updated maximumFlingVelocity to be represented as Float. Updated documentation to be more clear about the maximumFlingVelocity unity."
+          ]
+        },
+        {
+          "tag": "li",
+          "children": [
+            "onDragAndDropStart in the DragAndDropModifierNode factory has been renamed to acceptDragAndDropTransfer.acceptsDragAndDropTransfer has been added to the dragAndDropTarget Modifier to accept from a drag and drop session. This lambda returns a viable DragAndDropTarget if interested in a drag and drop session. Other lambdas for processing drag events have been replaced by this. a DragAndDropTarget factory function has been added to receive from drag and drop sessions"
+          ]
+        },
+        {
+          "tag": "li",
+          "children": [
+            "Removed DragAndDropInfo as a type DragAndDropModifierNode.drag now takes parameters for the transferData, decoration size and drag decoration DrawScope lambda  DragAndDropTarget has methods for particular drag and drop events instead of being a single abstract method  onDragAndDropEvent in the factory function for a DragAndDropModifierNode has been renamed to onDragAndDropStart to better communicate that the DragAndDropTarget provided is valid for a given drag and drop session only  The DragAndDropEventType has been removed"
+          ]
+        },
+        {
+          "tag": "li",
+          "children": [
+            "Renamed PlatformTextInputModifierNode.runTextInputSession to  establishTextInputSession."
+          ]
+        },
+        {
+          "tag": "li",
+          "children": [
+            "Improves traversable node api names to make them more understandable."
+          ]
+        },
+        {
+          "tag": "li",
+          "children": [ "Replace OriginalText by TextSubstitution." ]
+        },
+        {
+          "tag": "li",
+          "children": [
+            "Renamed PlatformTextInputModifierNode.textInputSession to runTextInputSession."
+          ]
+        },
+        {
+          "tag": "li",
+          "children": [
+            "The children of SubcomposeLayout which are retained to be reused in future are considered deactivated. New assertIsDeactivated() test API was introduced to test such nodes. The rests of the test apis will filter out deactivated nodes by default."
+          ]
+        },
+        {
+          "tag": "li",
+          "children": [
+            "Removed FocusDirection.In and FocusDirection.Out use FocusDirection.Enter and FocusDirection.Exit instead"
+          ]
+        },
+        {
+          "tag": "li",
+          "children": [
+            "Material SwipeToReveal APIs now rely on a slot based API instead of data class based instances to create those slots. This is a breaking change, please see the demo and sample code for examples on how to use the new API."
+          ]
+        },
+        {
+          "tag": "li",
+          "children": [
+            "FontStyle(int) constructor is deprecated, use FontStyle.Normal or FontStyle.Italic instead."
+          ]
+        },
+        {
+          "tag": "li",
+          "children": [ "Renamed FontScalable interface to FontScaling" ]
+        }
+      ]
+    },
+    { "tag": "hr" },
+    { "tag": "h4", "children": [ "Исправление ошибок" ] },
+    {
+      "tag": "ul",
+      "children": [
+        {
+          "tag": "li",
+          "children": [
+            "SoftwareKeyboardController.show() will no longer show the software keyboard if no text editor is focused."
+          ]
+        },
+        {
+          "tag": "li",
+          "children": [
+            "Hardware key Up events for keys that haven't received a Down event in the same Compose View will now be ignored."
+          ]
+        },
+        {
+          "tag": "li",
+          "children": [
+            "Add renderer support for Sweep Gradient in ArcLine."
+          ]
+        },
+        {
+          "tag": "li",
+          "children": [ "Implement equals and hashcode for PageSize.Fixed." ]
+        },
+        {
+          "tag": "li",
+          "children": [
+            "Fix binary compatibility issue with Window Inset change"
+          ]
+        },
+        {
+          "tag": "li",
+          "children": [
+            "Remove material core layer for Material3 Chip/Button as the microbenchmarks show better performance without it."
+          ]
+        },
+        {
+          "tag": "li",
+          "children": [
+            "TestDispatchers passed as the effectContext to Compose tests will now be used to create the test and frame clocks."
+          ]
+        }
+      ]
+    },
+    { "tag": "hr" },
+    {
+      "tag": "a",
+      "attrs": {
+        "href": "https://developer.android.com/jetpack/androidx/releases/wear-compose#1.3.0-beta01"
+      },
+      "children": [
+        { "tag": "h3", "children": [ "Wear Compose Version 1.3.0-beta01" ] }
+      ]
+    },
+    { "tag": "h4", "children": [ "Известные Проблемы" ] },
+    {
+      "tag": "ul",
+      "children": [
+        {
+          "tag": "li",
+          "children": [
+            "PositionIndicator is not initially shown when a screen is first displayed. We intend to make a change in an early 1.4 alpha so that it will be initially shown, but without any animation."
+          ]
+        }
+      ]
+    },
+    { "tag": "hr" },
+    { "tag": "h4", "children": [ "Изменения API" ] },
+    {
+      "tag": "ul",
+      "children": [
+        {
+          "tag": "li",
+          "children": [
+            "We have renamed the Foundation level SwipeToDismissBox to BasicSwipeToDismissBox. This makes the distinction clearer between the Foundation level component and the Material level SwipeToDismissBox. The latter pulls colors from the MaterialTheme to be used in scrims and delegates the remaining implementation to the BasicSwipeToDismissBox."
+          ]
+        },
+        {
+          "tag": "li",
+          "children": [
+            "We have marked rememberExpandableStateMapping as experimental and improved the performance of expandableItem."
+          ]
+        },
+        {
+          "tag": "li",
+          "children": [
+            "We have replaced the SwipeToRevealAction class in the Material SwipeToReveal Card and Chip APIs with a slot-based API using SwipeToRevealPrimaryAction, SwipeToRevealSecondaryAction and SwipeToRevealUndoAction composables. Please see sample code for examples on how to use the new API."
+          ]
+        },
+        {
+          "tag": "li",
+          "children": [
+            "We have replaced the PositionIndicator animation flags with AnimationSpec parameters. The individual animations can be disabled by passing snap as the AnimationSpec."
+          ]
+        }
+      ]
+    },
+    { "tag": "hr" },
+    { "tag": "h4", "children": [ "Исправление ошибок" ] },
+    {
+      "tag": "ul",
+      "children": [
+        {
+          "tag": "li",
+          "children": [
+            "We have fixed a bug triggered by limited curved text when size is limited"
+          ]
+        },
+        {
+          "tag": "li",
+          "children": [
+            "We have addressed a potential NaN crash related to curvedComposable"
+          ]
+        },
+        {
+          "tag": "li",
+          "children": [
+            "We have reverted the removal of the position change highlight animation on PositionIndicator."
+          ]
+        },
+        {
+          "tag": "li",
+          "children": [
+            "We have removed the material-core layer for material Chip to improve its performance."
+          ]
+        }
+      ]
+    },
+    { "tag": "hr" },
+    {
+      "tag": "a",
+      "attrs": { "href": "https://github.com/y2k/compose_news" },
+      "children": [ "Powered by Compose News bot (github)" ]
+    }
+  ]
+}
