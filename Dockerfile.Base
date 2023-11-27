@@ -1,3 +1,14 @@
 FROM ocaml/opam:alpine-ocaml-5.0
 
-RUN opam install -y dune ppx_deriving base64 re xml-light yojson angstrom js_of_ocaml js_of_ocaml-ppx ppx_deriving_yojson alcotest promise_jsoo
+RUN opam install -y dune \
+    alcotest \
+    angstrom \
+    base64 \
+    js_of_ocaml \
+    js_of_ocaml-ppx \
+    ppx_deriving \
+    ppx_deriving_yojson \
+    promise_jsoo \
+    re \
+    xml-light \
+    yojson
