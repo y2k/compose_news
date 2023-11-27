@@ -1,4 +1,4 @@
-module Framework : sig
+module TestUtils : sig
   val read_sample : string -> string
 
   val asset_with_file : string -> string -> unit
@@ -43,24 +43,24 @@ end = struct
 end
 
 let () =
-  Framework.read_sample "androidx-release-notes.xml"
+  TestUtils.read_sample "androidx-release-notes.xml"
   |> Compose_news.make_html_requests "2023-11-14T22:05:43.403Z"
   |> List.map (fun x -> Compose_news.rss_result_to_yojson x)
   |> fun xs ->
   Yojson.Safe.pretty_to_string (`List xs)
-  |> Framework.asset_with_file "empty_rss_parse_sample.json"
+  |> TestUtils.asset_with_file "empty_rss_parse_sample.json"
 
 let () =
-  Framework.read_sample "androidx-release-notes.xml"
+  TestUtils.read_sample "androidx-release-notes.xml"
   |> Compose_news.make_html_requests "2023-11-16T22:05:43.403Z"
   |> List.map (fun x -> Compose_news.rss_result_to_yojson x)
   |> fun xs ->
   Yojson.Safe.pretty_to_string (`List xs)
-  |> Framework.asset_with_file "empty_rss_parse_sample.json"
+  |> TestUtils.asset_with_file "empty_rss_parse_sample.json"
 
 let () =
   let html_requests =
-    Framework.read_sample "androidx-release-notes.xml"
+    TestUtils.read_sample "androidx-release-notes.xml"
     |> Compose_news.make_html_requests "2023-11-15T22:05:43.403Z"
   in
   (*  *)
@@ -68,16 +68,16 @@ let () =
   |> List.map (fun x -> Compose_news.rss_result_to_yojson x)
   |> fun xs ->
   Yojson.Safe.pretty_to_string (`List xs)
-  |> Framework.asset_with_file "rss_parse_sample.json" ;
+  |> TestUtils.asset_with_file "rss_parse_sample.json" ;
   (*  *)
   html_requests
   |> List.map (fun (x : Compose_news.rss_result) ->
          let path = (Hashtbl.hash x.link |> string_of_int) ^ ".html" in
-         Framework.read_sample path )
+         TestUtils.read_sample path )
   |> Compose_news.make_telegraph_post html_requests "34954e59d0af"
-  |> Framework.asset_with_file "telegraph.json"
+  |> TestUtils.asset_with_file "telegraph.json"
 
 let () =
   Compose_news.make_telegram_body {|{"result":{"url":"14b44899113c"}}|}
     "203a0753e679"
-  |> Framework.asset_with_file "send_telegram_request.json"
+  |> TestUtils.asset_with_file "send_telegram_request.json"
