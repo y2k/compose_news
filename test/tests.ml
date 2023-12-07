@@ -43,6 +43,32 @@ end = struct
 end
 
 let () =
+  let html_requests =
+    TestUtils.read_sample "androidx-release-notes-2.xml"
+    |> Compose_news.make_html_requests "2023-12-06T15:13:01.371Z"
+  in
+  html_requests
+  |> List.map (fun x -> Compose_news.rss_result_to_yojson x)
+  |> fun xs ->
+  Yojson.Safe.pretty_to_string (`List xs)
+  |> TestUtils.asset_with_file "rss_parse_sample2.json" ;
+  (*  *)
+  html_requests
+  |> List.map (fun (x : Compose_news.rss_result) ->
+         let path = (Hashtbl.hash x.link |> string_of_int) ^ ".html" in
+         TestUtils.read_sample path )
+  |> Compose_news.make_telegraph_post html_requests "34954e59d0af"
+  |> TestUtils.asset_with_file "telegraph2.json"
+
+let () =
+  TestUtils.read_sample "androidx-release-notes-2.xml"
+  |> Compose_news.make_html_requests "2023-12-07T15:13:01.371Z"
+  |> List.map (fun x -> Compose_news.rss_result_to_yojson x)
+  |> fun xs ->
+  Yojson.Safe.pretty_to_string (`List xs)
+  |> TestUtils.asset_with_file "empty_rss_parse_sample.json"
+
+let () =
   TestUtils.read_sample "androidx-release-notes.xml"
   |> Compose_news.make_html_requests "2023-11-14T22:05:43.403Z"
   |> List.map (fun x -> Compose_news.rss_result_to_yojson x)

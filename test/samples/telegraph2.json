@@ -1,0 +1,82 @@
+{
+  "access_token": "34954e59d0af",
+  "title": "Обновления библиотек «Compose»",
+  "author_name": "Compose News",
+  "author_url": "https://github.com/y2k/compose_news",
+  "content": [
+    { "tag": "h3", "children": [ "Оглавление" ] },
+    {
+      "tag": "ul",
+      "children": [
+        {
+          "tag": "li",
+          "children": [
+            {
+              "tag": "a",
+              "attrs": { "href": "#Compose-Compiler-Version-1.5.6" },
+              "children": [ "Compose Compiler Version 1.5.6" ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tag": "a",
+      "attrs": {
+        "href": "https://developer.android.com/jetpack/androidx/releases/compose-compiler#1.5.6"
+      },
+      "children": [
+        { "tag": "h3", "children": [ "Compose Compiler Version 1.5.6" ] }
+      ]
+    },
+    { "tag": "h4", "children": [ "Новые функции" ] },
+    {
+      "tag": "ul",
+      "children": [
+        { "tag": "li", "children": [ "Support for Kotlin 1.9.21" ] }
+      ]
+    },
+    { "tag": "hr" },
+    { "tag": "h4", "children": [ "Исправление ошибок" ] },
+    {
+      "tag": "ul",
+      "children": [
+        {
+          "tag": "li",
+          "children": [
+            "Enable intrinsic remember - the compiler transform that inlines remember in Compose compiler plugin and replaces .equals comparisons with int comparisons of the parameter meta for stable params. This results in less slots being used and less comparisons being done at runtime. The option can be disabled by providing compiler plugin argument: -P plugin:androidx.compose.compiler.plugins.kotlin:intrinsicRemember=false."
+          ]
+        },
+        {
+          "tag": "li",
+          "children": [
+            "Fix memoization of adapted function references and inline arguments."
+          ]
+        },
+        {
+          "tag": "li",
+          "children": [ "Realize groups when exiting inline function call" ]
+        }
+      ]
+    },
+    { "tag": "hr" },
+    { "tag": "h4", "children": [ "External Contribution" ] },
+    {
+      "tag": "ul",
+      "children": [
+        {
+          "tag": "li",
+          "children": [
+            "Fix k/native and k/wasm runtime crash due to missing return statement in Composable functions when it's the last statement and returns a null const"
+          ]
+        }
+      ]
+    },
+    { "tag": "hr" },
+    {
+      "tag": "a",
+      "attrs": { "href": "https://github.com/y2k/compose_news" },
+      "children": [ "Powered by Compose News bot (github)" ]
+    }
+  ]
+}
