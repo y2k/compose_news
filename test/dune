@@ -1,3 +1,4 @@
 (test
  (name tests)
+ (modes js)
  (libraries compose_news))

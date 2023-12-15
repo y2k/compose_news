@@ -8,10 +8,17 @@ COPY --chown=opam bin /app/bin
 COPY --chown=opam lib /app/lib
 COPY --chown=opam test /app/test
 
-RUN eval $(opam env) && sudo dune clean && sudo dune test && sudo dune build bin --profile=release
+RUN eval $(opam env) && sudo dune clean && sudo dune build --profile=release
 
 FROM y2khub/compose-news.wrangler
 
+# Run Tests
+COPY --from=0 /app/_build/default/test/tests.bc.js .
+COPY --from=0 /app/test/samples test/samples
+RUN ls -la
+RUN node tests.bc.js
+
+# Deploy to Cloudflare
 COPY --from=0 /app/_build/default/bin/main.bc.js .
 
 ARG CF_TOKEN

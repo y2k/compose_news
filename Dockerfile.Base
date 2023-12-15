@@ -1,14 +1,8 @@
-FROM ocaml/opam:alpine-ocaml-5.0
+FROM ocaml/opam:alpine-ocaml-5.1
 
-RUN opam install -y dune \
-    alcotest \
-    angstrom \
-    base64 \
-    js_of_ocaml \
-    js_of_ocaml-ppx \
-    ppx_deriving \
-    ppx_deriving_yojson \
-    promise_jsoo \
-    re \
-    xml-light \
-    yojson
+WORKDIR /app
+
+COPY Makefile .
+COPY compose_news.opam .
+
+RUN make restore

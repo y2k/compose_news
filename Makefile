@@ -1,4 +1,7 @@
-.PHONY: release wrangler schedule build_wrangler test update_base update_wrangler
+.PHONY: restore release wrangler schedule build_wrangler test update_base update_wrangler
+
+restore:
+	opam install . --deps-only -y
 
 release:
 	dune clean && dune build bin --profile=release
