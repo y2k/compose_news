@@ -10,6 +10,7 @@
  (depends
   ocaml
   dune
+  angstrom
   js_of_ocaml
   ppx_deriving_yojson
   promise_jsoo
