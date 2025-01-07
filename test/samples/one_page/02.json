@@ -1,0 +1,7 @@
+{
+  "effect": "db_write",
+  "in": {
+    "key": "last_id",
+    "value": "tag:google.com,2016:androidx-release-notes#december_12_2024"
+  }
+}

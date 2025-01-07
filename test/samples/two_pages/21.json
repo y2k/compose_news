@@ -1,0 +1,4 @@
+{
+  "effect": "resolve_env",
+  "in": "TARGET_CHAT"
+}

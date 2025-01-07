@@ -1,0 +1,11 @@
+{
+  "effect": "raw-fetch",
+  "in": {
+    "url": "https://developer.android.com/jetpack/androidx/releases/xr-compose#1.0.0-alpha01",
+    "props": {
+      "decoder": {
+        "type": "htmlrewriter"
+      }
+    }
+  }
+}

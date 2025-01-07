@@ -1,0 +1,6 @@
+{
+  "effect": "db_read",
+  "in": {
+    "key": "last_id"
+  }
+}

@@ -1,0 +1,21 @@
+name = "compose_news"
+main = "bin/src/main.js"
+compatibility_date = "2023-10-30"
+compatibility_flags = [ "nodejs_compat" ]
+
+kv_namespaces = [
+    { binding = "COMPOSE_NEWS_KV", id = "be1aaec7df4a4b0ebc08165cc159bd75" },
+]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "COMPOSE_NEWS_DB"
+database_id = "eb182463-11aa-4529-b0ee-3ea1df6f69d0"
+
+[observability]
+enabled = true
+head_sampling_rate = 1
+
+# [build]
+# command = "cd .. && make build"
+# watch_dir = ["../src"]

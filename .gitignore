@@ -1,0 +1,8 @@
+/.github/bin/
+/.github/.dev.vars
+/.github/node_modules/
+/.github/.wrangler/
+/.vscode/
+playground.clj
+.DS_store
+*.gen.*

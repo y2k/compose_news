@@ -1,0 +1,11 @@
+{
+  "effect": "raw-fetch",
+  "in": {
+    "url": "https://developer.android.com/jetpack/androidx/releases/compose-material#1.8.0-alpha07",
+    "props": {
+      "decoder": {
+        "type": "htmlrewriter"
+      }
+    }
+  }
+}
