@@ -16,7 +16,7 @@
    (.then (fn [r]
             (if (some? r)
               {:result (:out (JSON.parse r))}
-              null)))))
+              nil)))))
 
 (defn- handle_effect [env fx_name base_fx args]
   (let [key {:effect fx_name :in args}]

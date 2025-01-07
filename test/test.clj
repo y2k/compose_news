@@ -20,7 +20,7 @@
     (Promise.all
      (.map log (fn [x i]
                  (if (contains? x :in)
-                   (fs/writeFile (str log_path "/" (.padStart (.toString (/ i 2)) 2 "0") ".json") (JSON.stringify x null 2) "utf-8")
+                   (fs/writeFile (str log_path "/" (.padStart (.toString (/ i 2)) 2 "0") ".json") (JSON.stringify x nil 2) "utf-8")
                    (fs/writeFile (str log_path "/" (.padStart (.toString (/ (- i 1) 2)) 2 "0") ".txt") (or (:out x) "") "utf-8")))))))
 
 (def- DO_UPDATE false)
