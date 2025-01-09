@@ -6,3 +6,4 @@
 playground.clj
 .DS_store
 *.gen.*
+/.github/Makefile

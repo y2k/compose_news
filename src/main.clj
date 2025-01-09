@@ -1,4 +1,4 @@
-(ns main (:require ["../vendor/effects/0.1.0/main" :as e]
+(ns main (:require ["../vendor/effects/main" :as e]
                    ["./telegraph" :as tg]
                    ["./html" :as h]
                    ["./rss" :as cr]
