@@ -23,7 +23,11 @@
                    (fs/writeFile (str log_path "/" (.padStart (.toString (/ i 2)) 2 "0") ".json") (JSON.stringify x nil 2) "utf-8")
                    (fs/writeFile (str log_path "/" (.padStart (.toString (/ (- i 1) 2)) 2 "0") ".txt") (or (:out x) "") "utf-8")))))))
 
+;; === === === === === === === === === === ===
+;; To update the tests, set DO_UPDATE to true
+;;
 (def- DO_UPDATE false)
+;; === === === === === === === === === === ===
 
 (defn main [name]
   (let [dir (str "../test/samples/" name)]
@@ -51,6 +55,7 @@
 
 (->
  (Promise.resolve nil)
+ (.then (fn [] (main "january_15")))
  (.then (fn [] (main "two_pages")))
  (.then (fn [] (main "no_updates")))
  (.then (fn [] (main "one_page")))

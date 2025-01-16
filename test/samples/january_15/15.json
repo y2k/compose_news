@@ -1,0 +1,13 @@
+{
+  "effect": "raw-fetch",
+  "in": {
+    "url": "https://api.telegram.org/bot~TG_TOKEN~/sendMessage",
+    "props": {
+      "method": "POST",
+      "body": "{\"chat_id\":\"@xofftop_feed\",\"text\":\"https://telegra.ph/Compose-updates-01-16-3\"}",
+      "headers": {
+        "Content-Type": "application/json"
+      }
+    }
+  }
+}

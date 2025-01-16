@@ -1,0 +1,11 @@
+{
+  "effect": "raw-fetch",
+  "in": {
+    "url": "https://developer.android.com/feeds/androidx-release-notes.xml",
+    "props": {
+      "decoder": {
+        "type": "htmlrewriter"
+      }
+    }
+  }
+}
