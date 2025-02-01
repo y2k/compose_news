@@ -1,4 +1,4 @@
-(ns _ (:require ["./vendor/make/0.1.0/main" :as b]))
+(ns _ (:require ["./vendor/make/0.2.0/main" :as b]))
 
 (b/generate
  [(b/module

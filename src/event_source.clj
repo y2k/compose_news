@@ -1,3 +1,5 @@
+(ns _ (:require [js.node:buffer :refer [Buffer]]))
+
 (defn- compute_object_hash [obj]
   (defn- sha256 [data]
     (crypto.subtle.digest "SHA-256" data))
@@ -20,6 +22,7 @@
 
 (defn- handle_effect [env fx_name base_fx args]
   (let [key {:effect fx_name :in args}]
+    (println "EFFECT[IN]" fx_name args)
     (.then
      (compute_object_hash key)
      (fn [key_hash]
@@ -31,6 +34,7 @@
             (.then
              (base_fx args)
              (fn [fx_result]
+               (println "EFFECT[OUT]" fx_name fx_result)
                (->
                 (.prepare env.DB "INSERT INTO log (id, content) VALUES (?, ?)")
                 (.bind key_hash (JSON.stringify {:effect fx_name :date (Date.) :out fx_result}))

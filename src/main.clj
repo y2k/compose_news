@@ -1,4 +1,5 @@
 (ns main (:require ["../vendor/effects/main" :as e]
+                   ["../vendor/cf-xmlparser/main" :as hrw]
                    ["./telegraph" :as tg]
                    ["./html" :as h]
                    ["./rss" :as cr]
@@ -45,6 +46,20 @@
       (-> xs
           (.map (fn [r] (send_text_message r)))
           (e/batch))))))
+
+;; (defn- create_telegraph_page_batched [results]
+;;   (->
+;;    (chunk_array results 10)
+;;    (.map (fn [xs] (create_telegraph_page xs)))
+;;    (e/batch)
+;;    (e/then
+;;     (fn [xs]
+;;       (if (empty? xs)
+;;         (e/pure nil)
+;;         (reduce
+;;          (fn [acc x] (str acc "\n" x))
+;;          "Обновление Jepack Compose:"
+;;          xs))))))
 
 (def- LAST_ID_KEY "last_id")
 
