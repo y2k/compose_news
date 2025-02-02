@@ -36,17 +36,6 @@
     [array]
     (concat [(.slice array 0 size)] (chunk_array (.slice array size) size))))
 
-(defn- create_telegraph_page_batched [results]
-  (->
-   (chunk_array results 10)
-   (.map (fn [xs] (create_telegraph_page xs)))
-   (e/batch)
-   (e/then
-    (fn [xs]
-      (-> xs
-          (.map (fn [r] (send_text_message r)))
-          (e/batch))))))
-
 ;; (defn- create_telegraph_page_batched [results]
 ;;   (->
 ;;    (chunk_array results 10)
@@ -54,12 +43,24 @@
 ;;    (e/batch)
 ;;    (e/then
 ;;     (fn [xs]
-;;       (if (empty? xs)
-;;         (e/pure nil)
-;;         (reduce
-;;          (fn [acc x] (str acc "\n" x))
-;;          "Обновление Jepack Compose:"
-;;          xs))))))
+;;       (-> xs
+;;           (.map (fn [r] (send_text_message r)))
+;;           (e/batch))))))
+
+(defn- create_telegraph_page_batched [results]
+  (->
+   (chunk_array results 10)
+   (.map (fn [xs] (create_telegraph_page xs)))
+   (e/batch)
+   (e/then
+    (fn [xs]
+      (if (empty? xs)
+        (e/pure nil)
+        (send_text_message
+         (.reduce
+          xs
+          (fn [acc x] (str acc "\n- " x))
+          "Обновления Jepack Compose:\n")))))))
 
 (def- LAST_ID_KEY "last_id")
 

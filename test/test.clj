@@ -50,7 +50,7 @@
                          (if DO_UPDATE
                            (update_log dir new_log)
                            (Promise.resolve nil))
-                         (fn [] (FIXME "new_log is not equal to log"))))))
+                         (fn [] (FIXME "[" name "] new_log is not equal to log"))))))
            (.finally (fn [] (.stop worker))))))))))
 
 (->
