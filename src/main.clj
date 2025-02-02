@@ -10,13 +10,16 @@
 (defn- db_write    [key value] (fn [w] ((:db_write w)    {:key key :value value})))
 (defn- resolve_env [key]       (fn [w] ((:resolve_env w) key)))
 
-(defn- send_text_message [content]
+(defn- send_text_message [content options]
   (e/then
    (resolve_env :TARGET_CHAT)
    (fn [target_chat]
      (fetchX "https://api.telegram.org/bot~TG_TOKEN~/sendMessage"
              {:method "POST"
-              :body (JSON.stringify {:chat_id target_chat :text content})
+              :body (JSON.stringify
+                     (merge
+                      {:chat_id target_chat :text content}
+                      (if (some? options) options {})))
               :headers {"Content-Type" "application/json"}}))))
 
 (defn- create_telegraph_page [results]
@@ -36,17 +39,6 @@
     [array]
     (concat [(.slice array 0 size)] (chunk_array (.slice array size) size))))
 
-;; (defn- create_telegraph_page_batched [results]
-;;   (->
-;;    (chunk_array results 10)
-;;    (.map (fn [xs] (create_telegraph_page xs)))
-;;    (e/batch)
-;;    (e/then
-;;     (fn [xs]
-;;       (-> xs
-;;           (.map (fn [r] (send_text_message r)))
-;;           (e/batch))))))
-
 (defn- create_telegraph_page_batched [results]
   (->
    (chunk_array results 10)
@@ -60,7 +52,10 @@
          (.reduce
           xs
           (fn [acc x] (str acc "\n- " x))
-          "Обновления Jepack Compose:\n")))))))
+          "Обновления Jepack Compose:\n")
+         {:link_preview_options
+          {:show_above_text true
+           :url "https://developer.android.com/static/codelabs/jetpack-compose-animation/img/jetpack_compose_logo_with_rocket_1920.png"}}))))))
 
 (def- LAST_ID_KEY "last_id")
 

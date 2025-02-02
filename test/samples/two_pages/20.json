@@ -4,7 +4,7 @@
     "url": "https://api.telegram.org/bot~TG_TOKEN~/sendMessage",
     "props": {
       "method": "POST",
-      "body": "{\"chat_id\":\"@xofftop_feed\",\"text\":\"Обновления Jepack Compose:\\n\\n- https://telegra.ph/Compose-updates-01-06-23\\n- https://telegra.ph/Compose-updates-01-06-24\"}",
+      "body": "{\"chat_id\":\"@xofftop_feed\",\"text\":\"Обновления Jepack Compose:\\n\\n- https://telegra.ph/Compose-updates-01-06-23\\n- https://telegra.ph/Compose-updates-01-06-24\",\"link_preview_options\":{\"show_above_text\":true,\"url\":\"https://developer.android.com/static/codelabs/jetpack-compose-animation/img/jetpack_compose_logo_with_rocket_1920.png\"}}",
       "headers": {
         "Content-Type": "application/json"
       }
