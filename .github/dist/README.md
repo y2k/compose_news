@@ -1,0 +1,1 @@
+This folder contains the built output assets for the worker "compose_news" generated at 2025-07-10T20:54:56.936Z.
