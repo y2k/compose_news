@@ -1,111 +1,48 @@
-(ns main (:require ["../vendor/effects/main" :as e]
-                   ["../vendor/cf-xmlparser/main" :as hrw]
-                   ["./telegraph" :as tg]
-                   ["./html" :as h]
-                   ["./rss" :as cr]
-                   ["./event_source" :as es]))
+(ns main
+  (:require [xml :as xml]
+            [effect :as fx]
+            [views :as views]
+            [fetch :as fetch]
+            [telegram :as tg]))
 
-(defn- fetchX      [url props] (fn [w] ((:fetch w)       {:url url :props props})))
-(defn- db_read     [key]       (fn [w] ((:db_read w)     {:key key})))
-(defn- db_write    [key value] (fn [w] ((:db_write w)    {:key key :value value})))
-(defn- resolve_env [key]       (fn [w] ((:resolve_env w) key)))
+(defn- parse-form-data [text]
+  (let [params (js/URLSearchParams. text)]
+    (Object/fromEntries (.entries params))))
 
-(defn- send_text_message [content options]
-  (e/then
-   (resolve_env :TARGET_CHAT)
-   (fn [target_chat]
-     (fetchX "https://api.telegram.org/bot~TG_TOKEN~/sendMessage"
-             {:method "POST"
-              :body (JSON.stringify
-                     (merge
-                      {:chat_id target_chat :text content}
-                      (if (some? options) options {})))
-              :headers {"Content-Type" "application/json"}}))))
+(defn- get-text [request]
+  (fx/promise
+   (fn []
+     (.text request))))
 
-(defn- create_telegraph_page [results]
-  (e/then
-   (resolve_env :TELEGRAPH_TOKEN)
-   (fn [telegraph_token]
-     (let [content (tg/create_page telegraph_token results)]
-       (e/then
-        (fetchX "https://api.telegra.ph/createPage"
-                {:method :POST
-                 :headers {"content-type" "application/json"}
-                 :body content})
-        (fn [r] (e/pure (:url (:result (JSON.parse r))))))))))
+(defn handle-fetch [request env ctx]
+  (let [url (js/URL. request.url)
+        path url.pathname
+        method request.method]
+    (cond
+      (and (= path "/") (= method "GET"))
+      (fx/pure
+       (Response. (xml/to-string (views/home-page))
+                  {:headers {"Content-Type" "text/html"}}))
 
-(defn- chunk_array [array size]
-  (if (<= (.-length array) size)
-    [array]
-    (concat [(.slice array 0 size)] (chunk_array (.slice array size) size))))
+      (and (= path "/submit") (= method "POST"))
+      (-> (get-text request)
+          (fx/then (fn [body]
+                     (let [form-data (parse-form-data body)
+                           link (:link_to_event form-data)
+                           response (Response. (xml/to-string (views/submit-result link))
+                                               {:headers {"Content-Type" "text/html"}})]
+                       (-> (tg/send-message {:token env.TELEGRAM_TOKEN}
+                                            env.TELEGRAM_CHAT_ID
+                                            (str "Новая рекомендация: " link))
+                           (fx/then (fn [] response))
+                           (fx/recover (fn [err]
+                                         (eprintln err)
+                                         response)))))))
 
-(defn- create_telegraph_page_batched [results]
-  (->
-   (chunk_array results 10)
-   (.map (fn [xs] (create_telegraph_page xs)))
-   (e/batch)
-   (e/then
-    (fn [xs]
-      (if (empty? xs)
-        (e/pure nil)
-        (send_text_message
-         (.reduce
-          xs
-          (fn [acc x] (str acc "\n- " x))
-          "Обновления Jepack Compose:\n")
-         {:link_preview_options
-          {:show_above_text true
-           :url "https://developer.android.com/static/codelabs/jetpack-compose-animation/img/jetpack_compose_logo_with_rocket_1920.png"}}))))))
-
-(def- LAST_ID_KEY "last_id")
-
-(defn main []
-  (->
-   (e/batch [(fetchX "https://developer.android.com/feeds/androidx-release-notes.xml"
-                     {:decoder {:type :htmlrewriter :config cr/configure_rewriter}})
-             (db_read LAST_ID_KEY)])
-   (e/then (fn [[{body :items id :id} last_id]]
-             (if (= last_id id)
-               (e/pure nil)
-               (e/batch [(db_write LAST_ID_KEY id)
-                         (->
-                          body
-                          (.filter (fn [{url :url}] (.includes url "compose")))
-                          (.map (fn [{url :url}]
-                                  (fetchX url
-                                          {:decoder {:type :htmlrewriter
-                                                     :config (fn [rw] (h/configure_rewriter
-                                                                       {:id (-> url (.split "#") (get 1))
-                                                                        :url url} rw))}})))
-                          (e/batch)
-                          (e/then (fn [htmls]
-                                    (if (= 0 (.-length htmls))
-                                      (e/pure nil)
-                                      (create_telegraph_page_batched htmls)))))]))))))
-
-;; Infrastructure
-
-(defn create_env [env]
-  {:bindings env
-   :resolve_env (fn [key] (Promise.resolve (get env key)))
-   :db_read (fn [{key :key}]
-              (.get env.COMPOSE_NEWS_KV key))
-   :db_write (fn [{key :key value :value}]
-               (.put env.COMPOSE_NEWS_KV key value))
-   :raw-fetch (fn [{url :url props :props}]
-                (->
-                 (fetch (.replaceAll url "~TG_TOKEN~" env.TG_TOKEN) props)
-                 (.then (fn [r] (.text r)))))
-   :fetch (fn [{url :url props :props}]
-            (let [decoder (:decoder props)]
-              (->
-               (fetch (.replaceAll url "~TG_TOKEN~" env.TG_TOKEN) props)
-               (.then (fn [response]
-                        (if (and (some? decoder) (= (:type decoder) :htmlrewriter))
-                          (hrw/parse response (:config decoder))
-                          (.text response)))))))})
+      :else
+      (fx/pure
+       (Response. "Not Found" {:status 404})))))
 
 (export-default
- {:scheduled (fn [event env ctx] (.waitUntil ctx (.finally
-                                                  ((main) (es/decorate (create_env env)))
-                                                  (fn [] (es/reset_cache env)))))})
+ {:fetch (fn [request env ctx]
+           ((handle-fetch request env ctx) {}))})

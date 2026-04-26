@@ -1,4 +1,4 @@
-(ns _ (:require [js.node:buffer :refer [Buffer]]))
+(ns event-source (:require [js.node:buffer :refer [Buffer]]))
 
 (defn- compute_object_hash [obj]
   (defn- sha256 [data]

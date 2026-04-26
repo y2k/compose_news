@@ -1,5 +1,6 @@
-(ns _ (:require ["../src/main" :as m]
-                ["../vendor/cf-xmlparser/main" :as hrw]))
+(ns main-test
+  (:require ["../src/main" :as m]
+            ["../vendor/cf-xmlparser/main" :as hrw]))
 
 (defn- decorate_mock [log env world]
   (let [local_log (.toReversed log)]

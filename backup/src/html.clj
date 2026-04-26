@@ -1,3 +1,5 @@
+(ns html)
+
 (defn tag [name attrs & children]
   {:tag name :attrs (or attrs nil) :children children})
 

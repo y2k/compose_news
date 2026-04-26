@@ -1,5 +1,6 @@
-(ns test (:require [js.wrangler :as w]
-                   [js.fs.promises :as fs]))
+(ns test
+  (:require [js.wrangler :as w]
+            [js.fs.promises :as fs]))
 
 (defn- read_log [dir]
   (.then

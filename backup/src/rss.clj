@@ -1,3 +1,5 @@
+(ns rss)
+
 (defn configure_rewriter [rewriter]
   (let [items []
         id (atom 0)
