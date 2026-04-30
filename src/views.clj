@@ -21,7 +21,7 @@
                       :type "url"
                       :required true}]]]
            [:input {:type "submit" :value "Предложить"}]
-           [:p {} "Для канала: b" [:a {:href "https://t.me/jetpack_compose"} "@jetpack_compose"]]]))
+           [:p {} "Для канала: " [:a {:href "https://t.me/jetpack_compose"} "@jetpack_compose"]]]))
 
 (defn submit-result [link]
   (layout "Рекомендовать новость"

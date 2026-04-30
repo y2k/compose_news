@@ -1,5 +1,5 @@
 (ns telegram
-  (:require [fetch :as f]))
+  (:require [effect-fetch :as f]))
 
 (defn send-message [config chat_id text]
   (f/fetch

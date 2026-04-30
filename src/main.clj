@@ -2,7 +2,7 @@
   (:require [xml :as xml]
             [effect :as fx]
             [views :as views]
-            [fetch :as fetch]
+            [effect-fetch :as f]
             [telegram :as tg]))
 
 (defn- parse-form-data [text]
@@ -10,7 +10,7 @@
     (Object/fromEntries (.entries params))))
 
 (defn- get-text [request]
-  (fx/promise
+  (fx/thunk
    (fn []
      (.text request))))
 
@@ -31,13 +31,14 @@
                            link (:link_to_event form-data)
                            response (Response. (xml/to-string (views/submit-result link))
                                                {:headers {"Content-Type" "text/html"}})]
-                       (-> (tg/send-message {:token env.TELEGRAM_TOKEN}
+                       (-> (tg/send-message {:token env.TG_TOKEN}
                                             env.TELEGRAM_CHAT_ID
-                                            (str "Новая рекомендация: " link))
-                           (fx/then (fn [] response))
+                                            (str "Новая рекомендация (compose news): " link))
+                           (fx/then (fn []
+                                      (fx/pure response)))
                            (fx/recover (fn [err]
                                          (eprintln err)
-                                         response)))))))
+                                         (fx/pure response))))))))
 
       :else
       (fx/pure
@@ -45,4 +46,4 @@
 
 (export-default
  {:fetch (fn [request env ctx]
-           ((handle-fetch request env ctx) {}))})
+           ((f/with-fetch js/fetch (handle-fetch request env ctx)) {}))})
