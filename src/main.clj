@@ -14,7 +14,7 @@
    (fn []
      (.text request))))
 
-(defn handle-fetch [request env ctx]
+(defn handle-fetch [request env _]
   (let [url (js/URL. request.url)
         path url.pathname
         method request.method]

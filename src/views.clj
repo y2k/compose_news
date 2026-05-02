@@ -15,13 +15,13 @@
   (layout "Рекомендовать новость"
           [:form {:method "POST" :action "/submit"}
            [:fieldset {}
-            [:label {} "Ссылка на новость, библиотеку и тд."
+            [:label {} "Ссылка на новость, библиотеку, отзыв или предложение"
              [:input {:name "link_to_event"
-                      :placeholder "https://"
-                      :type "url"
                       :required true}]]]
            [:input {:type "submit" :value "Предложить"}]
-           [:p {} "Для канала: " [:a {:href "https://t.me/jetpack_compose"} "@jetpack_compose"]]]))
+           [:p {} "Для канала: " [:a {:href "https://t.me/s/jetpack_compose"
+                                      :target "_blank"}
+                                  "@jetpack_compose"]]]))
 
 (defn submit-result [link]
   (layout "Рекомендовать новость"
