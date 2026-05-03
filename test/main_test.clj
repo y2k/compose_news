@@ -1,5 +1,5 @@
 (ns main-test
-  (:require [test-utils :as tu]
+  (:require [test-cloudflare-worker :as tu]
             ["node:test" :as t]))
 
 (t/test "GET /"
@@ -15,4 +15,4 @@
                      {:method "POST"
                       :headers {"Content-Type" "application/x-www-form-urlencoded"}
                       :body (str "link_to_event=" (encodeURIComponent "https://example.com/news"))})
-           "eyJlZmZlY3RzIjpbeyJ0eXBlIjoiZmV0Y2giLCJ1cmwiOiJodHRwczovL2FwaS50ZWxlZ3JhbS5vcmcvYm90dGVzdC10b2tlbi9zZW5kTWVzc2FnZSIsInByb3BzIjp7Im1ldGhvZCI6IlBPU1QiLCJoZWFkZXJzIjp7IkNvbnRlbnQtVHlwZSI6ImFwcGxpY2F0aW9uL2pzb24ifSwiZGVjb2RlciI6Impzb24iLCJib2R5Ijoie1wiY2hhdF9pZFwiOlwidGVzdC1jaGF0XCIsXCJ0ZXh0XCI6XCLQndC+0LLQsNGPINGA0LXQutC+0LzQtdC90LTQsNGG0LjRjyAoY29tcG9zZSBuZXdzKTogaHR0cHM6Ly9leGFtcGxlLmNvbS9uZXdzXCJ9In19XSwicmVzcG9uc2UiOiI8aHRtbCA+PGhlYWQgPjxtZXRhICBjaGFyc2V0PSdVVEYtOCc+PC9tZXRhPjxtZXRhICBuYW1lPSd2aWV3cG9ydCcgY29udGVudD0nd2lkdGg9ZGV2aWNlLXdpZHRoLCBpbml0aWFsLXNjYWxlPTEnPjwvbWV0YT48dGl0bGUgPtCg0LXQutC+0LzQtdC90LTQvtCy0LDRgtGMINC90L7QstC+0YHRgtGMPC90aXRsZT48bGluayAgcmVsPSdzdHlsZXNoZWV0JyBocmVmPSdodHRwczovL2Nkbi5qc2RlbGl2ci5uZXQvbnBtL0BwaWNvY3NzL3BpY29AMi9jc3MvcGljby5taW4uY3NzJz48L2xpbms+PC9oZWFkPjxib2R5ID48bWFpbiAgY2xhc3M9J2NvbnRhaW5lcic+PGFydGljbGUgPjxwID7QodC/0LDRgdC40LHQviEg0KHRgdGL0LvQutCwINC/0L7Qu9GD0YfQtdC90LA6IGh0dHBzOi8vZXhhbXBsZS5jb20vbmV3czwvcD48YSAgaHJlZj0nLyc+0JLQtdGA0L3Rg9GC0YzRgdGPPC9hPjwvYXJ0aWNsZT48L21haW4+PC9ib2R5PjwvaHRtbD4ifQ==")))
+           "eyJlZmZlY3RzIjpbeyJ1cmwiOiJodHRwczovL2FwaS50ZWxlZ3JhbS5vcmcvYm90dGVzdC10b2tlbi9zZW5kTWVzc2FnZSIsInByb3BzIjp7Im1ldGhvZCI6IlBPU1QiLCJoZWFkZXJzIjp7IkNvbnRlbnQtVHlwZSI6ImFwcGxpY2F0aW9uL2pzb24ifSwiZGVjb2RlciI6Impzb24iLCJib2R5Ijoie1wiY2hhdF9pZFwiOlwidGVzdC1jaGF0XCIsXCJ0ZXh0XCI6XCLQndC+0LLQsNGPINGA0LXQutC+0LzQtdC90LTQsNGG0LjRjyAoY29tcG9zZSBuZXdzKTogaHR0cHM6Ly9leGFtcGxlLmNvbS9uZXdzXCJ9In0sInR5cGUiOiJlZmZlY3RzX3Byb21pc2UuZmV0Y2g6ZmV0Y2gifV0sInJlc3BvbnNlIjoiPGh0bWwgPjxoZWFkID48bWV0YSAgY2hhcnNldD0nVVRGLTgnPjwvbWV0YT48bWV0YSAgbmFtZT0ndmlld3BvcnQnIGNvbnRlbnQ9J3dpZHRoPWRldmljZS13aWR0aCwgaW5pdGlhbC1zY2FsZT0xJz48L21ldGE+PHRpdGxlID7QoNC10LrQvtC80LXQvdC00L7QstCw0YLRjCDQvdC+0LLQvtGB0YLRjDwvdGl0bGU+PGxpbmsgIHJlbD0nc3R5bGVzaGVldCcgaHJlZj0naHR0cHM6Ly9jZG4uanNkZWxpdnIubmV0L25wbS9AcGljb2Nzcy9waWNvQDIvY3NzL3BpY28ubWluLmNzcyc+PC9saW5rPjwvaGVhZD48Ym9keSA+PG1haW4gIGNsYXNzPSdjb250YWluZXInPjxhcnRpY2xlID48cCA+0KHQv9Cw0YHQuNCx0L4hINCh0YHRi9C70LrQsCDQv9C+0LvRg9GH0LXQvdCwOiBodHRwczovL2V4YW1wbGUuY29tL25ld3M8L3A+PGEgIGhyZWY9Jy8nPtCS0LXRgNC90YPRgtGM0YHRjzwvYT48L2FydGljbGU+PC9tYWluPjwvYm9keT48L2h0bWw+In0=")))
